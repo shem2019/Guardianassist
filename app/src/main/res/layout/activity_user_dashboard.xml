@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".UserDashboardActivity">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/dashboardTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="16dp" />
+
+
+    <!-- Navigation Buttons -->
+    <LinearLayout
+        android:id="@+id/navigationButtons"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/dashboardTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/btnDashboard"
+            android:layout_width="85dp"
+            android:layout_height="wrap_content"
+            android:text="Dash" />
+
+        <Button
+            android:id="@+id/btnPatrol"
+            android:layout_width="86dp"
+            android:layout_height="wrap_content"
+
+            android:text="Patrol" />
+
+        <Button
+            android:id="@+id/btnTasks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tasks" />
+        <Button
+            android:id="@+id/btnlogout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="logout" />
+    </LinearLayout>
+
+    <!-- FrameLayout for switching layouts -->
+    <FrameLayout
+        android:id="@+id/frameContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/navigationButtons"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Dashboard Layout -->
+        <GridLayout
+            android:id="@+id/gridLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:columnCount="2"
+            android:rowCount="3"
+            android:layout_gravity="center"
+            android:padding="6dp">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/bookon"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_margin="2dp">
+                <ImageView
+                    android:layout_marginTop="15dp"
+                    android:paddingTop="5dp"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/bookon" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:text="Book On"
+                    android:gravity="center"
+                    android:layout_gravity="bottom"
+                    android:textSize="20sp"
+                    android:textColor="#3c4552"
+                    android:layout_marginBottom="20dp" />
+            </androidx.cardview.widget.CardView>
+
+
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/uniformcheck"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_margin="2dp">
+                <ImageView
+                    android:layout_marginTop="15dp"
+                    android:paddingTop="5dp"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/uniform" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:text="uniform check"
+                    android:gravity="center"
+                    android:layout_gravity="bottom"
+                    android:textSize="20sp"
+                    android:textColor="#3c4552"
+                    android:layout_marginBottom="20dp" />
+            </androidx.cardview.widget.CardView>
+
+
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/hourlycheck"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_margin="2dp">
+                <ImageView
+                    android:layout_marginTop="15dp"
+                    android:paddingTop="5dp"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/hourly" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Hourly Check"
+                    android:gravity="center"
+                    android:layout_gravity="bottom"
+                    android:textSize="20sp"
+                    android:textColor="#3c4552"
+                    android:layout_marginBottom="20dp" />
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/patrol"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_margin="2dp">
+                <ImageView
+                    android:layout_marginTop="15dp"
+                    android:paddingTop="5dp"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/patrol" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Patrol Report"
+                    android:gravity="center"
+                    android:layout_gravity="bottom"
+                    android:textSize="20sp"
+                    android:textColor="#3c4552"
+                    android:layout_marginBottom="20dp" />
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/incident"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_margin="2dp">
+                <ImageView
+                    android:layout_marginTop="15dp"
+                    android:paddingTop="5dp"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/warning" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Incident Report"
+                    android:gravity="center"
+                    android:layout_gravity="bottom"
+                    android:textSize="20sp"
+                    android:textColor="#3c4552"
+                    android:layout_marginBottom="20dp" />
+            </androidx.cardview.widget.CardView>
+            <androidx.cardview.widget.CardView
+                android:id="@+id/bookoff"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_margin="2dp">
+                <ImageView
+                    android:layout_marginTop="15dp"
+                    android:paddingTop="5dp"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/bookoff" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Book Off"
+                    android:gravity="center"
+                    android:layout_gravity="bottom"
+                    android:textSize="20sp"
+                    android:textColor="#3c4552"
+                    android:layout_marginBottom="20dp" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Add more CardViews and TextViews for other grid items -->
+
+        </GridLayout>
+
+        <!-- Patrol Layout -->
+        <LinearLayout
+            android:id="@+id/patrolLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Patrol Activities"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_gravity="center"
+                android:layout_marginBottom="8dp" />
+
+            <ListView
+                android:id="@+id/patrolList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@android:color/darker_gray"
+                android:dividerHeight="1dp" />
+        </LinearLayout>
+
+        <!-- Tasks Layout -->
+        <LinearLayout
+            android:id="@+id/tasksLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Task Management"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_gravity="center"
+                android:layout_marginBottom="8dp" />
+
+            <ListView
+                android:id="@+id/tasksList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@android:color/darker_gray"
+                android:dividerHeight="1dp" />
+        </LinearLayout>
+
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

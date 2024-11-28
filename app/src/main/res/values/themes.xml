@@ -1,0 +1,21 @@
+<!-- res/values/styles.xml -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+
+    <style name="Base.Theme.GuardianAssist" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="buttonStyle">@style/CustomButtonStyle
+        </item> <!-- Reference to custom button style -->
+        <!-- Other theme customizations -->
+    </style>
+
+    <style name="CustomButtonStyle">
+        <item name="android:background">@drawable/buttonstates</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:padding">16dp</item>
+    </style>
+
+    <style name="Theme.GuardianAssist" parent="Base.Theme.GuardianAssist" />
+
+    <!-- Custom Button Style -->
+
+</resources>
