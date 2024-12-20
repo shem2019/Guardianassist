@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.guardianassist.appctrl.RetrofitClient
 import com.example.guardianassist.appctrl.SessionManager
 import com.example.guardianassist.appctrl.SaveEventRequest
+import com.example.guardianassist.appctrl.SaveLogRequest
 import com.example.guardianassist.databinding.ActivityUserDashboardBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -47,7 +48,7 @@ class UserDashboardActivity : AppCompatActivity() {
 
         // Set welcome message
         val realName = sessionManager.fetchRealName()
-        binding.dashboardTitle.text = "Welcome $realName"
+        binding.dashboardTitle.text = "Welcome ${realName ?: "User"}"
 
         // Initialize NFC adapter
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
@@ -73,8 +74,11 @@ class UserDashboardActivity : AppCompatActivity() {
 
         // Logout button
         binding.btnlogout.setOnClickListener {
+            val token = sessionManager.fetchUserToken()
+            if (token != null) {
+                saveLog("User Logout", token)
+            }
             sessionManager.clearSession()
-            saveLog("Logout")
             val intent = Intent(this, LandingPage::class.java)
             startActivity(intent)
             finish()
@@ -83,6 +87,11 @@ class UserDashboardActivity : AppCompatActivity() {
         // Book On button
         binding.bookon.setOnClickListener {
             startWaitingForTag()
+        }
+        //Uniform check button
+        binding.uniformcheck.setOnClickListener {
+            val intent= Intent(this, Uniformcheck::class.java)
+            startActivity(intent)
         }
     }
 
@@ -180,14 +189,15 @@ class UserDashboardActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveLog(eventType: String) {
-        val token = sessionManager.fetchUserToken()
-        val logRequest = mapOf("event_type" to eventType)
+    private fun saveLog(eventType: String, token: String) {
+        val logRequest = SaveLogRequest(event_type = eventType)
 
         RetrofitClient.apiService.saveLog("Bearer $token", logRequest).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (!response.isSuccessful) {
-                    Log.e("LOG", "Failed to save log")
+                    Log.e("LOG", "Failed to save log. Response code: ${response.code()} - ${response.errorBody()?.string()}")
+                } else {
+                    Log.i("LOG", "Log saved successfully")
                 }
             }
 
@@ -197,12 +207,14 @@ class UserDashboardActivity : AppCompatActivity() {
         })
     }
 
+
+
     private fun saveEvent(eventType: String, siteName: String) {
         val token = sessionManager.fetchUserToken()
         val realName = sessionManager.fetchRealName()
         val eventTime = Calendar.getInstance().time.toString()
 
-        val eventRequest = SaveEventRequest(eventType, siteName, realName, eventTime)
+        val eventRequest = SaveEventRequest(eventType, siteName, realName ?: "Unknown", eventTime)
         RetrofitClient.apiService.saveEvent("Bearer $token", eventRequest).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (!response.isSuccessful) {

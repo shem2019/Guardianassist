@@ -56,6 +56,14 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
     implementation("com.google.ai.edge.litert:litert:1.0.1")
     implementation("com.google.ai.edge.litert:litert-support-api:1.0.1")
+    implementation("androidx.activity:activity:1.8.0")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation ("androidx.camera:camera-core:1.4.1")
+    implementation ("androidx.camera:camera-lifecycle:1.4.1")
+    implementation ("androidx.camera:camera-view:1.4.1")
+    implementation ("androidx.camera:camera-extensions:1.4.1")
+
+
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")

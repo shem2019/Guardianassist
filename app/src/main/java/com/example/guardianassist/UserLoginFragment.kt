@@ -2,12 +2,14 @@ package com.example.guardianassist
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.guardianassist.appctrl.RetrofitClient
+import com.example.guardianassist.appctrl.SaveLogRequest
 import com.example.guardianassist.appctrl.SessionManager
 import com.example.guardianassist.appctrl.UserDetailsResponse
 import com.example.guardianassist.appctrl.UserLoginRequest
@@ -60,15 +62,18 @@ class UserLoginFragment : Fragment() {
                 if (response.isSuccessful) {
                     val loginResponse = response.body()
                     if (loginResponse?.status == "success" && loginResponse.token != null) {
-                        // Save token in SessionManager and navigate to the User Dashboard
+                        // Save user token
                         sessionManager.saveUserToken(loginResponse.token)
+
+                        // Save login event
+                        saveLog("User  Login", loginResponse.token)
 
                         // Fetch real name using the token
                         fetchRealName(loginResponse.token)
 
+                        // Navigate to User Dashboard
                         startActivity(Intent(requireContext(), UserDashboardActivity::class.java))
                         activity?.finish()
-
                     } else {
                         Toast.makeText(requireContext(), loginResponse?.message ?: "Login failed", Toast.LENGTH_SHORT).show()
                     }
@@ -82,6 +87,26 @@ class UserLoginFragment : Fragment() {
             }
         })
     }
+
+    private fun saveLog(eventType: String, token: String) {
+        val logRequest = SaveLogRequest(event_type = eventType)
+
+        RetrofitClient.apiService.saveLog("Bearer $token", logRequest).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (!response.isSuccessful) {
+                    Log.e("LOG", "Failed to save log. Response code: ${response.code()} - ${response.errorBody()?.string()}")
+                } else {
+                    Log.i("LOG", "Log saved successfully")
+                }
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                Log.e("LOG", "Error saving log: ${t.message}")
+            }
+        })
+    }
+
+
     //fetch data
     private fun fetchRealName(token: String) {
         RetrofitClient.apiService.getUserDetails("Bearer $token").enqueue(object : Callback<UserDetailsResponse> {

@@ -1,11 +1,15 @@
 package com.example.guardianassist.appctrl
 
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Query
 
 // Data model for sending signup request
@@ -75,7 +79,7 @@ data class SaveLogRequest(
 
 interface ApiService {
     //logs
-    @POST("log")
+    @POST("savelog.php")
     fun saveLog(
         @Header("Authorization") token: String,
         @Body logRequest: SaveLogRequest
@@ -115,6 +119,14 @@ interface ApiService {
     fun loginUser(@Body request: UserLoginRequest): Call<UserLoginResponse>
     @POST("storeFacialData.php")
     fun storeFacialData(@Body request: FacialDataRequest): Call<StoreResponse>
+    //
+    @Multipart
+    @POST("uniform.php")
+    fun uploadImage(
+        @Header("Authorization") token: String,
+        @Part image: MultipartBody.Part,
+        @Part("token") tokenPart: RequestBody
+    ): Call<Void>
 
 
 
