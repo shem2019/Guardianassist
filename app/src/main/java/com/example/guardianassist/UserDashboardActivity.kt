@@ -1,21 +1,31 @@
 package com.example.guardianassist
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.graphics.Color
 import android.media.MediaPlayer
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.Ndef
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.example.guardianassist.appctrl.RetrofitClient
 import com.example.guardianassist.appctrl.SessionManager
 import com.example.guardianassist.appctrl.SaveEventRequest
@@ -37,6 +47,16 @@ class UserDashboardActivity : AppCompatActivity() {
     private val timeoutHandler = Handler(Looper.getMainLooper())
     private lateinit var sessionManager: SessionManager
     private var errorSound: MediaPlayer? = null
+    private var elapsedSeconds = 0
+    private val totalDuration = 50 // 1 hour in seconds
+    private val handler = Handler(Looper.getMainLooper())
+    private var isHourlyCheckHighlighted = false
+    private var mediaPlayer: MediaPlayer? = null
+    companion object {
+        private const val CHANNEL_ID = "HourlyCheckReminder"
+        private const val NOTIFICATION_ID = 1
+        private const val REQUEST_PERMISSION_CODE = 101
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +69,10 @@ class UserDashboardActivity : AppCompatActivity() {
         // Set welcome message
         val realName = sessionManager.fetchRealName()
         binding.dashboardTitle.text = "Welcome ${realName ?: "User"}"
+        // Initialize hourly check progress
+        initializeHourlyCheck()
+        //create notification channel
+        createNotificationChannel()
 
         // Initialize NFC adapter
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
@@ -226,5 +250,112 @@ class UserDashboardActivity : AppCompatActivity() {
                 Log.e("EVENT", "Error saving event: ${t.message}")
             }
         })
+    }
+
+    private fun initializeHourlyCheck() {
+        val progressBar = binding.hourlycheck.findViewById<ProgressBar>(R.id.progressBarHourlyCheck)
+
+        // Start updating the progress bar
+        handler.postDelayed(object : Runnable {
+            override fun run() {
+                if (elapsedSeconds < totalDuration) {
+                    elapsedSeconds++
+                    progressBar.progress = elapsedSeconds
+
+                    // Update progress bar and card status
+                    if (elapsedSeconds == totalDuration) {
+                        highlightHourlyCheck()
+                    }
+
+                    handler.postDelayed(this, 1000) // Repeat every second
+                }
+            }
+        }, 1000)
+    }
+
+    private fun highlightHourlyCheck() {
+        if (!isHourlyCheckHighlighted) {
+            val hourlyCheckCard = binding.hourlycheck
+            hourlyCheckCard.setCardBackgroundColor(Color.parseColor("#FFDD57")) // Highlight in yellow
+            isHourlyCheckHighlighted = true
+
+            // Show alert dialog, play sound, and send notification
+            showHourlyCheckDialog()
+            playReminderSound()
+            showNotification()
+        }
+    }
+
+    private fun showHourlyCheckDialog() {
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Hourly Check Due")
+            .setMessage("It's time to perform the hourly check. Please proceed.")
+            .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+            .setCancelable(false)
+            .create()
+        dialog.show()
+    }
+    private fun playReminderSound() {
+        // Initialize MediaPlayer with the sound resource
+        mediaPlayer = MediaPlayer.create(this, R.raw.error)
+        mediaPlayer?.start()
+    }
+
+
+    private fun showNotification() {
+        val intent = Intent(this, UserDashboardActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.notification)
+            .setContentTitle("Hourly Check Reminder")
+            .setContentText("It's time to perform your hourly check.")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification)
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Hourly Check Reminder"
+            val descriptionText = "Channel for hourly check reminders"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_PERMISSION_CODE) {
+            if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permission required for NFC and Audio", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

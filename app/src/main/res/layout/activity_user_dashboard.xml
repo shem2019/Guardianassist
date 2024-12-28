@@ -155,6 +155,17 @@
                     android:textSize="20sp"
                     android:textColor="#3c4552"
                     android:layout_marginBottom="20dp" />
+                <ProgressBar
+                    android:id="@+id/progressBarHourlyCheck"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_gravity="bottom"
+                    android:layout_height="10dp"
+                    android:layout_margin="8dp"
+                    android:max="50"
+                    android:progress="0"
+                    android:progressTint="@color/colorPrimary" />
+
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
