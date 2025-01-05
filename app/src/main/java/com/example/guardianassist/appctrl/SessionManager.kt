@@ -48,6 +48,7 @@ class SessionManager(context: Context) {
         return prefs.getString(REAL_NAME_KEY,null)
     }
 
+
     // Clear tokens (called during logout)
     fun clearSession() {
         val editor = prefs.edit()

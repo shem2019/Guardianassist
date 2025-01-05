@@ -48,7 +48,7 @@ class UserDashboardActivity : AppCompatActivity() {
     private lateinit var sessionManager: SessionManager
     private var errorSound: MediaPlayer? = null
     private var elapsedSeconds = 0
-    private val totalDuration = 50 // 1 hour in seconds
+    private val totalDuration = 3600 // 1 hour in seconds
     private val handler = Handler(Looper.getMainLooper())
     private var isHourlyCheckHighlighted = false
     private var mediaPlayer: MediaPlayer? = null
@@ -69,7 +69,10 @@ class UserDashboardActivity : AppCompatActivity() {
         // Set welcome message
         val realName = sessionManager.fetchRealName()
         binding.dashboardTitle.text = "Welcome ${realName ?: "User"}"
+
+
         // Initialize hourly check progress
+        startHourlyCheckService()
         initializeHourlyCheck()
         //create notification channel
         createNotificationChannel()
@@ -112,9 +115,20 @@ class UserDashboardActivity : AppCompatActivity() {
         binding.bookon.setOnClickListener {
             startWaitingForTag()
         }
+        binding.hourlycheck.setOnClickListener {
+            val intent= Intent(this,HourlyCheckActivity::class.java)
+            startActivity(intent)
+            resetHourlyCheckUI()
+
+
+        }
         //Uniform check button
         binding.uniformcheck.setOnClickListener {
             val intent= Intent(this, Uniformcheck::class.java)
+            startActivity(intent)
+        }
+        binding.incident.setOnClickListener {
+            val intent= Intent(this,IncidentReportActivity::class.java)
             startActivity(intent)
         }
     }
@@ -129,6 +143,7 @@ class UserDashboardActivity : AppCompatActivity() {
             .setCancelable(false)
             .create()
         loadingDialog.show()
+        setupNfc()
 
         // Enable NFC foreground dispatch
         nfcAdapter.enableForegroundDispatch(this, pendingIntent, intentFilters, null)
@@ -251,6 +266,30 @@ class UserDashboardActivity : AppCompatActivity() {
             }
         })
     }
+    private fun checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    REQUEST_PERMISSION_CODE
+                )
+            }
+        }
+    }
+
+    private fun startHourlyCheckService() {
+        val serviceIntent = Intent(this, HourlyCheckService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
+    }
 
     private fun initializeHourlyCheck() {
         val progressBar = binding.hourlycheck.findViewById<ProgressBar>(R.id.progressBarHourlyCheck)
@@ -350,6 +389,24 @@ class UserDashboardActivity : AppCompatActivity() {
         }
     }
 
+
+
+    private fun setupNfc() {
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this)
+        if (nfcAdapter == null) {
+            Toast.makeText(this, "NFC not supported on this device", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        nfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null)
+    }
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_PERMISSION_CODE) {
@@ -358,4 +415,12 @@ class UserDashboardActivity : AppCompatActivity() {
             }
         }
     }
+    private fun resetHourlyCheckUI() {
+        val hourlyCheckCard = binding.hourlycheck
+        val progressBar = binding.hourlycheck.findViewById<ProgressBar>(R.id.progressBarHourlyCheck)
+
+        hourlyCheckCard.setCardBackgroundColor(Color.WHITE)
+        progressBar.progress = 0
+    }
+
 }

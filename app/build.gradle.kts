@@ -27,11 +27,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         viewBinding = true
@@ -41,6 +41,7 @@ android {
 dependencies {
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+
     //camera
 
     implementation ("androidx.camera:camera-core:1.3.4")
@@ -57,11 +58,13 @@ dependencies {
     implementation("com.google.ai.edge.litert:litert:1.0.1")
     implementation("com.google.ai.edge.litert:litert-support-api:1.0.1")
     implementation("androidx.activity:activity:1.8.0")
+
     implementation ("com.squareup.okhttp3:okhttp:4.9.3")
     implementation ("androidx.camera:camera-core:1.4.1")
     implementation ("androidx.camera:camera-lifecycle:1.4.1")
     implementation ("androidx.camera:camera-view:1.4.1")
     implementation ("androidx.camera:camera-extensions:1.4.1")
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
 
 
 

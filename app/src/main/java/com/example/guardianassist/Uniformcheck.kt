@@ -12,6 +12,8 @@ import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.Ndef
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -50,6 +52,8 @@ class Uniformcheck : AppCompatActivity() {
     private lateinit var submitButton: Button
 
     // NFC Components
+    private lateinit var handler: Handler
+    private lateinit var nfcTimeoutRunnable: Runnable
     private lateinit var nfcAdapter: NfcAdapter
     private lateinit var pendingIntent: PendingIntent
     private lateinit var intentFilters: Array<IntentFilter>
@@ -67,6 +71,8 @@ class Uniformcheck : AppCompatActivity() {
 
     companion object {
         private const val CAMERA_PERMISSION_CODE = 100
+        private const val NFC_TIMEOUT = 15000L // 15 seconds in milliseconds
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +91,20 @@ class Uniformcheck : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         // NFC Setup
+        handler = Handler(Looper.getMainLooper())
+        nfcTimeoutRunnable = Runnable {
+            if (isWaitingForTag) {
+                isWaitingForTag = false
+                loadingDialog.dismiss()
+                Toast.makeText(this, "NFC scan timed out. Please try again.", Toast.LENGTH_SHORT).show()
+                finish() // Close the activity
+            }
+        }
+
+        // Start the timeout countdown
+        handler.postDelayed(nfcTimeoutRunnable, NFC_TIMEOUT)
+
+
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         if (nfcAdapter == null) {
             Toast.makeText(this, "NFC is not available on this device", Toast.LENGTH_LONG).show()
@@ -122,6 +142,7 @@ class Uniformcheck : AppCompatActivity() {
             .setCancelable(false)
             .create()
         loadingDialog.show()
+
     }
 
     override fun onResume() {
@@ -165,6 +186,7 @@ class Uniformcheck : AppCompatActivity() {
                 if (cleanedPayload.contains("Book On", ignoreCase = true)) {
                     loadingDialog.dismiss()
                     isWaitingForTag = false
+                    handler.removeCallbacks(nfcTimeoutRunnable) // Cancel timeout
                     Toast.makeText(this, "Book On detected!", Toast.LENGTH_LONG).show()
                     enableCameraFeatures()
                 } else {
@@ -178,6 +200,7 @@ class Uniformcheck : AppCompatActivity() {
             Toast.makeText(this, "Error reading NFC tag.", Toast.LENGTH_SHORT).show()
         }
     }
+
 
     private fun enableCameraFeatures() {
         startCamera()
@@ -231,7 +254,7 @@ class Uniformcheck : AppCompatActivity() {
 
         imageCapture.takePicture(outputOptions, ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageSavedCallback {
             override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                val bitmap = android.graphics.BitmapFactory.decodeFile(photoFile.absolutePath)
+                val bitmap = fixImageRotation(photoFile.absolutePath) // Correct rotation
                 capturedBitmap = bitmap
                 capturedImage.setImageBitmap(bitmap)
                 capturedImage.visibility = View.VISIBLE
@@ -248,6 +271,29 @@ class Uniformcheck : AppCompatActivity() {
             }
         })
     }
+    private fun fixImageRotation(imagePath: String): Bitmap {
+        val bitmap = android.graphics.BitmapFactory.decodeFile(imagePath)
+        val exif = androidx.exifinterface.media.ExifInterface(imagePath)
+
+        val rotation = when (exif.getAttributeInt(
+            androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION,
+            androidx.exifinterface.media.ExifInterface.ORIENTATION_UNDEFINED
+        )) {
+            androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90 -> 90
+            androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180 -> 180
+            androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_270 -> 270
+            else -> 0
+        }
+
+        return if (rotation != 0) {
+            val matrix = android.graphics.Matrix().apply { postRotate(rotation.toFloat()) }
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        } else {
+            bitmap
+        }
+    }
+
+
 
     private fun retakeImage() {
         capturedBitmap = null
@@ -270,32 +316,41 @@ class Uniformcheck : AppCompatActivity() {
             return
         }
 
-        // Convert the Bitmap to a ByteArray
+        // Show a progress dialog
+        val progressDialog = AlertDialog.Builder(this)
+            .setTitle("Submitting Image")
+            .setMessage("Uploading. Please wait...")
+            .setCancelable(false)
+            .create()
+        progressDialog.show()
+
         val stream = ByteArrayOutputStream()
         capturedBitmap?.compress(Bitmap.CompressFormat.JPEG, 90, stream)
         val byteArray = stream.toByteArray()
 
-        // Prepare the image file as a MultipartBody.Part
         val requestBody = RequestBody.create("image/jpeg".toMediaTypeOrNull(), byteArray)
         val imagePart = MultipartBody.Part.createFormData("image", "uniform_check.jpg", requestBody)
         val descriptionPart = RequestBody.create("text/plain".toMediaTypeOrNull(), "Uniform Check")
 
-        // Make the API call
         RetrofitClient.apiService.uploadImage("Bearer $token", imagePart, descriptionPart)
             .enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                    progressDialog.dismiss()
                     if (response.isSuccessful) {
-                        Toast.makeText(this@Uniformcheck, "Image submitted successfully!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@Uniformcheck, "Uniform Check Successful!", Toast.LENGTH_SHORT).show()
+                        finish()
                     } else {
                         Toast.makeText(this@Uniformcheck, "Failed to submit image.", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<Void>, t: Throwable) {
+                    progressDialog.dismiss()
                     Toast.makeText(this@Uniformcheck, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
     }
+
 
     override fun onDestroy() {
         super.onDestroy()

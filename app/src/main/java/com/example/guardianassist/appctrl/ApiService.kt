@@ -72,7 +72,25 @@ data class SaveEventRequest(
 data class SaveLogRequest(
     val event_type: String
 )
+data class SaveHourlyCheckRequest(
+    val token: String, // References `token` column in `users`
+    val site_id: Int, // References `site_id` column in `sites`
+    val personal_safety: Boolean,
+    val site_secure: Boolean,
+    val equipment_functional: Boolean,
+    val comments: String? // Optional comments field
+)
 
+data class IncidentReportRequest(
+    val token: RequestBody,
+    val incidentType: RequestBody,
+    val customIncident: RequestBody?,
+    val incidentDescription: RequestBody,
+    val correctiveAction: RequestBody,
+    val severity: RequestBody,
+    val incidentImage: MultipartBody.Part?,
+    val correctiveImage: MultipartBody.Part?
+)
 
 
 
@@ -127,6 +145,24 @@ interface ApiService {
         @Part image: MultipartBody.Part,
         @Part("token") tokenPart: RequestBody
     ): Call<Void>
+// hourly
+    @POST("posthourly.php") // Replace with your actual endpoint
+    fun saveHourlyCheck(@Body request: SaveHourlyCheckRequest): Call<Void>
+
+    @Multipart
+    @POST("incidentreport.php")
+    fun reportIncident(
+        @Part("token") token: RequestBody,
+        @Part("incident_type") incidentType: RequestBody, // Match backend parameter
+        @Part("custom_incident") customIncident: RequestBody?, // Match backend parameter
+        @Part("incident_description") incidentDescription: RequestBody, // Match backend parameter
+        @Part("corrective_action") correctiveAction: RequestBody, // Match backend parameter
+        @Part("severity") severity: RequestBody,
+        @Part incidentImage: MultipartBody.Part?,
+        @Part correctiveImage: MultipartBody.Part?
+    ): Call<Void>
+
+
 
 
 
