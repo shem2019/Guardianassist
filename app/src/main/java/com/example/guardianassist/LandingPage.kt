@@ -40,16 +40,16 @@ class LandingPage : AppCompatActivity() {
 
         // Declare Admin and User buttons if no token is found
         val adminButton = findViewById<Button>(R.id.btnadmin)
-        val adminsignupButton = findViewById<Button>(R.id.btnsignup)
+        //val adminsignupButton = findViewById<Button>(R.id.btnsignup)
         val userButton = findViewById<Button>(R.id.btnuser)
 
         // Load Admin Login fragment when Admin button is clicked
         adminButton.setOnClickListener {
             loadFragment(AdminLoginFragment())
         }
-        adminsignupButton.setOnClickListener {
-            loadFragment(AdminSignupFragment())
-        }
+       //// adminsignupButton.setOnClickListener {
+          //  loadFragment(AdminSignupFragment())
+        //}
 
 
         // Load User Login fragment when User button is clicked

@@ -1,96 +1,57 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="@color/white">
+    android:background="@android:color/white">
 
-    <!-- Search Bar for Filtering Sites -->
-    <EditText
-        android:id="@+id/etSearchSite"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Search Site..."
-        android:drawableLeft="@android:drawable/ic_menu_search"
-        android:background="@android:drawable/editbox_background"
-        android:padding="12dp"
-        android:textSize="14sp" />
-
-    <!-- Site Selection Spinner -->
+    <!-- Title -->
     <TextView
-        android:id="@+id/tvSelectSite"
+        android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select Site:"
-        android:textSize="16sp"
+        android:text="Organizations"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="@color/black"
-        android:layout_below="@id/etSearchSite"
-        android:layout_marginTop="12dp" />
+        android:textColor="@android:color/black"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="12dp" />
 
-    <Spinner
-        android:id="@+id/spinnerSites"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tvSelectSite"
-        android:layout_marginTop="8dp"
-        android:background="@android:drawable/editbox_background"
-        android:padding="8dp" />
-
-    <!-- Google Map -->
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/map"
-        android:layout_width="match_parent"
-        android:layout_height="450dp"
-        android:layout_below="@id/spinnerSites"
-        android:layout_marginTop="16dp"
-        android:background="@android:color/darker_gray" />
-
-    <!-- Floating Button to Add Site -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddSite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@android:drawable/ic_input_add"
-        android:tint="@color/white"
-        android:backgroundTint="@color/green"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="185dp"
-        android:layout_below="@id/map"
-        android:layout_marginBottom="72dp" />
-
-    <!-- Floating Button to Add Checkpoints -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddCheckpoint"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@android:drawable/ic_input_add"
-        android:tint="@color/white"
-        android:backgroundTint="@color/blue"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="16dp"
-        android:layout_below="@id/map"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Checkpoints Label -->
+    <!-- Label for RecyclerView -->
     <TextView
-        android:id="@+id/tvCheckpoints"
+        android:id="@+id/tvOrganizationsLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Added Checkpoints:"
+        android:text="Select an Organization"
         android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:layout_below="@id/fabAddCheckpoint"
-        android:layout_marginTop="12dp" />
+        android:textColor="@android:color/darker_gray"
+        android:layout_below="@id/tvTitle"
+        android:layout_marginBottom="8dp" />
 
-    <!-- RecyclerView for Listing Checkpoints -->
+    <!-- RecyclerView for Organizations -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewCheckpoints"
+        android:id="@+id/recyclerViewOrganizations"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/tvCheckpoints"
-        android:layout_marginTop="12dp"
-        android:scrollbars="vertical" />
+        android:layout_below="@id/tvOrganizationsLabel"
+        android:layout_above="@id/btnAddOrganization"
+        android:paddingBottom="60dp"
+        android:scrollbars="vertical"
+        android:background="@android:color/white"/>
 
+    <!-- Add Organization Button -->
+    <Button
+        android:id="@+id/btnAddOrganization"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add Organization"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@color/teal_700"
+        android:drawableLeft="@android:drawable/ic_input_add"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="16dp"
+        android:padding="12dp"
+        app:cornerRadius="8dp"/>
 </RelativeLayout>

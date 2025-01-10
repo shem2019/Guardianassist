@@ -7,7 +7,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add New Site"
+        android:text="Add New Organization"
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="@android:color/black"
@@ -15,31 +15,16 @@
         android:paddingBottom="12dp"/>
 
     <EditText
-        android:id="@+id/etSiteName"
+        android:id="@+id/etOrgName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter site name"
+        android:hint="Enter organization name"
         android:inputType="textCapWords"/>
 
     <EditText
-        android:id="@+id/etSiteAddress"
+        android:id="@+id/etOrgEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter site address"
-        android:inputType="textCapWords"/>
-
-    <EditText
-        android:id="@+id/etLatitude"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter latitude"
-        android:inputType="numberDecimal"/>
-
-    <EditText
-        android:id="@+id/etLongitude"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter longitude"
-        android:inputType="numberDecimal"/>
-
+        android:hint="Enter billing email"
+        android:inputType="textEmailAddress"/>
 </LinearLayout>

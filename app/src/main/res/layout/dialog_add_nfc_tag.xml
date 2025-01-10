@@ -7,7 +7,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add New Site"
+        android:text="Add NFC Tag"
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="@android:color/black"
@@ -15,19 +15,11 @@
         android:paddingBottom="12dp"/>
 
     <EditText
-        android:id="@+id/etSiteName"
+        android:id="@+id/etTagName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter site name"
-        android:inputType="textCapWords"/>
-
-    <EditText
-        android:id="@+id/etSiteAddress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter site address"
-        android:inputType="textCapWords"/>
-
+        android:hint="Enter Tag Name"
+        />
     <EditText
         android:id="@+id/etLatitude"
         android:layout_width="match_parent"
@@ -41,5 +33,10 @@
         android:layout_height="wrap_content"
         android:hint="Enter longitude"
         android:inputType="numberDecimal"/>
+
+    <Spinner
+        android:id="@+id/spinnerTagType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>

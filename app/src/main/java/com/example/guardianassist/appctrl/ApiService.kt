@@ -1,9 +1,12 @@
 package com.example.guardianassist.appctrl
 
+import com.google.gson.annotations.SerializedName
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
@@ -96,21 +99,6 @@ data class SitesResponse(
     val sites: List<Site>
 )
 
-
-
-data class Site(
-    val id: Int,
-    val name: String,
-    val latitude: Double,
-    val longitude: Double
-)
-
-// Response wrapper for fetching sites
-data class SiteResponse(
-    val success: Boolean,
-    val sites: List<Site>
-)
-
 // Represents a single NFC tag
 data class Tag(
     val id: Int,
@@ -147,8 +135,65 @@ data class PatrolRouteResponse(
     val success: Boolean,
     val route: List<PatrolCheckpoint>
     )
+data class AccessResponse(val access: String, val reason: String?)
+
+data class Organization(
+    val org_id: Int,
+    val org_name: String,
+    val email: String,
+    val subscription_status: String
+)
+data class OrganizationResponse(val success: Boolean, val organizations: List<Organization>)
+data class SiteResponse(val success: Boolean, val sites: List<Site>)
+
+data class Site(
+    val site_id: Int,
+    val org_id: Int,
+    val site_name: String,
+    val site_address: String,
+    val latitude: Double,
+    val longitude: Double,
+    val subscription_status: String
+)
+
+data class SiteStatusUpdate(
+    val site_id: Int,
+    val subscription_status: String
+)
 
 
+data class BasicResponse(
+    @SerializedName("success")
+    val success: Boolean,
+
+    @SerializedName("message")
+    val message: String
+)
+
+data class NfcTagResponse(
+    val success: Boolean,
+    val message: String?,
+    val tags: List<NfcTag>
+)
+
+
+data class NfcTag(
+    val tag_id: Int,
+
+    @SerializedName("tag_name")
+    val tagName: String, // ✅ Ensures tag_name is included
+
+    val site_id: Int,
+
+    @SerializedName("tag_type")
+    val tagType: String, // ✅ Correct field name (was tag_type)
+
+    val latitude: Double,
+    val longitude: Double,
+
+    @SerializedName("is_active")
+    val isActive: Boolean
+)
 
 interface ApiService {
     //logs
@@ -190,8 +235,7 @@ interface ApiService {
     fun updatePassword(@Body request: UpdatePasswordRequest): Call<UpdatePasswordResponse>
     @POST("user_login.php")
     fun loginUser(@Body request: UserLoginRequest): Call<UserLoginResponse>
-    @POST("storeFacialData.php")
-    fun storeFacialData(@Body request: FacialDataRequest): Call<StoreResponse>
+
     //
     @Multipart
     @POST("uniform.php")
@@ -217,15 +261,6 @@ interface ApiService {
         @Part correctiveImage: MultipartBody.Part?
     ): Call<Void>
 
-
-    // 🚀 Add a new site
-    @POST("add_site.php")
-    fun addSite(@Body site: Site): Call<Void>
-
-    // 🚀 Fetch all sites
-    @GET("fetch_site.php")
-    fun fetchSites(): Call<SiteResponse>
-
     // 🚀 Add a new tag (NFC checkpoint)
     @POST("add_tag.php")
     fun addTag(@Body tag: Tag): Call<Void>
@@ -241,6 +276,32 @@ interface ApiService {
     // 🚀 Fetch patrol route for a site
     @GET("fetch_patrol_route.php")
     fun getPatrolRoute(@Query("site_id") siteId: Int): Call<PatrolRouteResponse>
+
+    @FormUrlEncoded
+    @POST("check_access.php")
+    fun checkAccess(@Field("user_id") userId: Int): Call<AccessResponse>
+    @GET("get_organizations.php")
+    fun getOrganizations(): Call<OrganizationResponse>
+
+    @POST("add_organization.php")
+    fun addOrganization(@Body organization: Organization): Call<BasicResponse>
+    @GET("get_sites.php")
+    fun getSites(@Query("org_id") orgId: Int): Call<SiteResponse>
+
+    @POST("add_site.php")
+    fun addSite(@Body site: Site): Call<BasicResponse>
+
+    @POST("update_site_status.php")
+    fun updateSiteStatus(@Body request: SiteStatusUpdate): Call<BasicResponse>
+
+    @GET("get_nfc_tags.php")
+    fun getNfcTags(@Query("site_id") siteId: Int): Call<NfcTagResponse>
+
+    @POST("add_nfc_tag.php")
+    fun addNfcTag(@Body nfcTag: NfcTag): Call<BasicResponse>
+
+    //@POST("activate_nfc_tags.php")
+  //  fun activateNfcTags(@Body request: ActivateTagsRequest): Call<BasicResponse>
 
 }
 
