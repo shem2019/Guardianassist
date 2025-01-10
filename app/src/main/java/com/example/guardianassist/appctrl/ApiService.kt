@@ -91,7 +91,62 @@ data class IncidentReportRequest(
     val incidentImage: MultipartBody.Part?,
     val correctiveImage: MultipartBody.Part?
 )
+data class SitesResponse(
+    val success: Boolean,
+    val sites: List<Site>
+)
 
+
+
+data class Site(
+    val id: Int,
+    val name: String,
+    val latitude: Double,
+    val longitude: Double
+)
+
+// Response wrapper for fetching sites
+data class SiteResponse(
+    val success: Boolean,
+    val sites: List<Site>
+)
+
+// Represents a single NFC tag
+data class Tag(
+    val id: Int,
+    val site_id: Int,
+    val name: String,
+    val type: String, // "Start", "Intermediate", "End"
+    val latitude: Double,
+    val longitude: Double
+)
+
+// Response wrapper for fetching tags
+data class TagResponse(
+    val success: Boolean,
+    val tags: List<Tag>
+)
+
+// Data model for patrol route
+data class PatrolRoutePayload(
+    val site_id: Int,
+    val checkpoints: List<PatrolCheckpoint>
+)
+
+// Represents a single checkpoint in a patrol route
+data class PatrolCheckpoint(
+    val id: Int,
+    val name: String,
+    val type: String,
+    val latitude: Double,
+    val longitude: Double
+)
+
+// Response wrapper for patrol route
+data class PatrolRouteResponse(
+    val success: Boolean,
+    val route: List<PatrolCheckpoint>
+    )
 
 
 
@@ -163,7 +218,29 @@ interface ApiService {
     ): Call<Void>
 
 
+    // 🚀 Add a new site
+    @POST("add_site.php")
+    fun addSite(@Body site: Site): Call<Void>
 
+    // 🚀 Fetch all sites
+    @GET("fetch_site.php")
+    fun fetchSites(): Call<SiteResponse>
 
+    // 🚀 Add a new tag (NFC checkpoint)
+    @POST("add_tag.php")
+    fun addTag(@Body tag: Tag): Call<Void>
+
+    // 🚀 Fetch tags for a site
+    @GET("fetch_tags.php")
+    fun fetchTags(@Query("site_id") siteId: Int): Call<TagResponse>
+
+    // 🚀 Save patrol route
+    @POST("add_patrol_route.php")
+    fun savePatrolRoute(@Body payload: PatrolRoutePayload): Call<Void>
+
+    // 🚀 Fetch patrol route for a site
+    @GET("fetch_patrol_route.php")
+    fun getPatrolRoute(@Query("site_id") siteId: Int): Call<PatrolRouteResponse>
 
 }
+

@@ -1,196 +1,120 @@
 package com.example.guardianassist
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
-import android.view.View
+import android.view.LayoutInflater
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.guardianassist.databinding.ActivityMappingBinding
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.guardianassist.appctrl.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.*
+import com.google.android.gms.maps.model.LatLng
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MappingActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var map: GoogleMap
-    private lateinit var binding: ActivityMappingBinding
     private lateinit var siteSpinner: Spinner
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private val checkpointList = mutableListOf<Checkpoint>() // Holds checkpoint data
+    private lateinit var recyclerViewCheckpoints: RecyclerView
+    private lateinit var adapter: CheckpointAdapter
+    private val checkpointList = mutableListOf<Tag>()
     private val LOCATION_PERMISSION_REQUEST_CODE = 1000
-    private var lastCheckpointLatLng: LatLng? = null // Keeps track of the last checkpoint
+    private var selectedSiteId: Int = -1
+    private val sharedPrefs by lazy { getSharedPreferences("app_data", Context.MODE_PRIVATE) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMappingBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_mapping)
 
-        siteSpinner = binding.spinnerSites
+        siteSpinner = findViewById(R.id.spinnerSites)
+        recyclerViewCheckpoints = findViewById(R.id.recyclerViewCheckpoints)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // Initialize Google Map
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        // Load offline data
+        loadOfflineSites()
+        loadOfflineCheckpoints()
 
-        // Populate site spinner
+        // Initialize RecyclerView
+        adapter = CheckpointAdapter(checkpointList) { checkpoint ->
+            deleteCheckpoint(checkpoint)
+        }
+        recyclerViewCheckpoints.layoutManager = LinearLayoutManager(this)
+        recyclerViewCheckpoints.adapter = adapter
+
+        setupSwipeToDelete()
+
+        // Initialize Google Maps
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
+        mapFragment?.getMapAsync(this)
+
         fetchSites()
 
-        // Add Checkpoint Button
-        binding.btnAddCheckpoint.setOnClickListener {
-            addCheckpoint()
+        // Floating Buttons
+        findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabAddSite).setOnClickListener {
+            showAddSiteDialog()
         }
-
-        // Save Patrol Route Button
-        binding.btnSavePatrolRoute.setOnClickListener {
-            savePatrolRoute()
+        findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabAddCheckpoint).setOnClickListener {
+            addTag()
         }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
-
-        // Set default map position
         if (checkLocationPermission()) {
+            map.isMyLocationEnabled = true
             centerMapOnCurrentLocation()
         } else {
             requestLocationPermission()
         }
 
-        // Enable My Location layer if permission granted
-        if (checkLocationPermission()) {
-            map.isMyLocationEnabled = true
-        }
-
-        // Handle map clicks
         map.setOnMapClickListener { latLng ->
-            promptCheckpointName(latLng)
+            showTagDialog(latLng)
         }
     }
 
-    private fun fetchSites() {
-        // Mock API call to fetch sites
-        val siteNames = listOf("Site A", "Site B", "Site C")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, siteNames)
-        siteSpinner.adapter = adapter
-
-        siteSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val selectedSite = siteNames[position]
-                zoomToSite(selectedSite) // Zoom map to selected site
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
+    private fun checkLocationPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun zoomToSite(siteName: String) {
-        // Mock site location data
-        val siteLocations = mapOf(
-            "Site A" to LatLng(-1.2921, 36.8219),
-            "Site B" to LatLng(-1.3000, 36.8000),
-            "Site C" to LatLng(-1.3200, 36.8500)
+    private fun requestLocationPermission() {
+        ActivityCompat.requestPermissions(
+            this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE
         )
-
-        val location = siteLocations[siteName]
-        if (location != null) {
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
-        }
     }
 
     private fun centerMapOnCurrentLocation() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }
+        if (!checkLocationPermission()) return
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
                 val currentLatLng = LatLng(location.latitude, location.longitude)
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
-            } else {
-                Toast.makeText(this, "Unable to fetch current location.", Toast.LENGTH_SHORT).show()
-            }
-        }.addOnFailureListener {
-            Toast.makeText(this, "Failed to fetch location: ${it.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun promptCheckpointName(latLng: LatLng) {
-        val dialog = AlertDialog.Builder(this)
-        dialog.setTitle("Add Checkpoint")
-        dialog.setMessage("Enter checkpoint name:")
-
-        val input = EditText(this)
-        dialog.setView(input)
-
-        dialog.setPositiveButton("Add") { _, _ ->
-            val checkpointName = input.text.toString().trim()
-            if (checkpointName.isNotEmpty()) {
-                addCheckpointMarker(latLng, checkpointName)
-                checkpointList.add(Checkpoint(name = checkpointName, lat = latLng.latitude, lng = latLng.longitude))
-                Toast.makeText(this, "Checkpoint added: $checkpointName", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Checkpoint name cannot be empty", Toast.LENGTH_SHORT).show()
             }
         }
-
-        dialog.setNegativeButton("Cancel", null)
-        dialog.show()
+    }
+    private fun deleteCheckpoint(checkpoint: Tag) {
+        checkpointList.remove(checkpoint) // Remove from list
+        adapter.notifyDataSetChanged() // Refresh RecyclerView
+        saveOfflineCheckpoints() // Save updated list to offline storage
+        Toast.makeText(this, "Checkpoint deleted", Toast.LENGTH_SHORT).show()
     }
 
-    private fun addCheckpointMarker(latLng: LatLng, name: String) {
-        // Generate a random color for the marker
-        val randomColor = getRandomColor()
-
-        // Add the marker to the map
-        map.addMarker(
-            MarkerOptions()
-                .position(latLng)
-                .title(name)
-                .icon(BitmapDescriptorFactory.defaultMarker(randomColor))
-        )
-
-        // Connect this checkpoint to the last checkpoint with a polyline
-        if (lastCheckpointLatLng != null) {
-            map.addPolyline(
-                PolylineOptions()
-                    .add(lastCheckpointLatLng, latLng)
-                    .width(5f)
-                    .color(ContextCompat.getColor(this, R.color.patrol_route))
-            )
-        }
-
-        // Update the last checkpoint
-        lastCheckpointLatLng = latLng
-    }
-
-    private fun getRandomColor(): Float {
-        // Returns a random hue for the marker
-        return kotlin.random.Random.nextFloat() * 360
-    }
-
-    private fun addCheckpoint() {
+    private fun addTag() {
         if (!checkLocationPermission()) {
             requestLocationPermission()
             return
@@ -198,80 +122,177 @@ class MappingActivity : AppCompatActivity(), OnMapReadyCallback {
 
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
-                val currentLatLng = LatLng(location.latitude, location.longitude)
-                promptCheckpointName(currentLatLng)
+                showTagDialog(LatLng(location.latitude, location.longitude))
             } else {
                 Toast.makeText(this, "Unable to fetch current location.", Toast.LENGTH_SHORT).show()
             }
-        }.addOnFailureListener {
-            Toast.makeText(this, "Failed to fetch location: ${it.message}", Toast.LENGTH_SHORT).show()
         }
     }
+    private fun showTagDialog(latLng: LatLng) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_tag, null)
+        val radioGroup = dialogView.findViewById<RadioGroup>(R.id.radioGroupTagType)
+        val editTextTagName = dialogView.findViewById<EditText>(R.id.editTextTagName)
 
-    private fun savePatrolRoute() {
-        if (checkpointList.isEmpty()) {
-            Toast.makeText(this, "No checkpoints to save", Toast.LENGTH_SHORT).show()
+        AlertDialog.Builder(this)
+            .setTitle("Add Tag")
+            .setView(dialogView)
+            .setPositiveButton("Save") { _, _ ->
+                val tagType = when (radioGroup.checkedRadioButtonId) {
+                    R.id.radioStartTag -> "Start"
+                    R.id.radioEndTag -> "End"
+                    R.id.radioIntermediateTag -> "Intermediate"
+                    else -> return@setPositiveButton
+                }
+                val tagName = editTextTagName.text.toString().trim()
+                if (tagName.isNotEmpty()) {
+                    saveTagToDatabase(tagName, tagType, latLng)
+                } else {
+                    Toast.makeText(this, "Tag name cannot be empty", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun saveTagToDatabase(name: String, type: String, latLng: LatLng) {
+        val newTag = Tag(0, selectedSiteId, name, type, latLng.latitude, latLng.longitude)
+
+        // Add to local list & update UI
+        checkpointList.add(newTag)
+        adapter.notifyDataSetChanged()
+
+        // Save for offline use
+        saveOfflineCheckpoints()
+
+        if (!isInternetAvailable()) {
+            Toast.makeText(this, "Tag saved offline. Will sync when online.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Mock API call to save route
-        Toast.makeText(this, "Patrol route saved!", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun checkLocationPermission(): Boolean {
-        val fineLocationPermission = ContextCompat.checkSelfPermission(
-            this, Manifest.permission.ACCESS_FINE_LOCATION
-        )
-        val coarseLocationPermission = ContextCompat.checkSelfPermission(
-            this, Manifest.permission.ACCESS_COARSE_LOCATION
-        )
-        return fineLocationPermission == PackageManager.PERMISSION_GRANTED &&
-                coarseLocationPermission == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestLocationPermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ),
-            LOCATION_PERMISSION_REQUEST_CODE
-        )
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                centerMapOnCurrentLocation()
-                if (ActivityCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    return
+        // Send to backend
+        RetrofitClient.apiService.addTag(newTag).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    Toast.makeText(this@MappingActivity, "Tag saved!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@MappingActivity, "Failed to save tag", Toast.LENGTH_SHORT).show()
                 }
-                map.isMyLocationEnabled = true
-            } else {
-                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                Toast.makeText(this@MappingActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+    private fun saveOfflineCheckpoints() {
+        val editor = sharedPrefs.edit()
+        val json = Gson().toJson(checkpointList)
+        editor.putString("offline_checkpoints", json)
+        editor.apply()
+    }
+
+    private fun setupSwipeToDelete() {
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                checkpointList.removeAt(position)
+                adapter.notifyItemRemoved(position)
+                saveOfflineCheckpoints()
+            }
+        })
+        itemTouchHelper.attachToRecyclerView(recyclerViewCheckpoints)
+    }
+    private fun loadOfflineSites() {
+        val json = sharedPrefs.getString("offline_sites", null)
+        if (!json.isNullOrEmpty()) {
+            val type = object : TypeToken<List<Site>>() {}.type
+            val savedSites: List<Site> = Gson().fromJson(json, type)
+
+            if (savedSites.isNotEmpty()) {
+                val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, savedSites.map { it.name })
+                siteSpinner.adapter = adapter
             }
         }
     }
-}
+    private fun loadOfflineCheckpoints() {
+        val json = sharedPrefs.getString("offline_checkpoints", null)
+        if (!json.isNullOrEmpty()) {
+            val type = object : TypeToken<List<Tag>>() {}.type
+            val savedCheckpoints: List<Tag> = Gson().fromJson(json, type)
 
-data class Checkpoint(val name: String, val lat: Double, val lng: Double)
+            checkpointList.clear()
+            checkpointList.addAll(savedCheckpoints)
+            adapter.notifyDataSetChanged()
+        }
+    }
+
+
+
+    private fun showAddSiteDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_site, null)
+        val etSiteName = dialogView.findViewById<EditText>(R.id.etSiteName)
+
+        AlertDialog.Builder(this)
+            .setTitle("Add New Site")
+            .setView(dialogView)
+            .setPositiveButton("Save") { _, _ ->
+                val siteName = etSiteName.text.toString().trim()
+                if (siteName.isNotEmpty()) {
+                    addNewSite(siteName)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun addNewSite(name: String) {
+        if (!isInternetAvailable()) {
+            val offlineSite = Site(0, name, 0.0, 0.0)
+            saveOfflineSites(listOf(offlineSite))
+            return
+        }
+
+        val newSite = Site(0, name, 0.0, 0.0)
+
+        RetrofitClient.apiService.addSite(newSite).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) fetchSites()
+            }
+            override fun onFailure(call: Call<Void>, t: Throwable) {}
+        })
+    }
+    private fun saveOfflineSites(sites: List<Site>) {
+        val editor = sharedPrefs.edit()
+        val json = Gson().toJson(sites)
+        editor.putString("offline_sites", json)
+        editor.apply()
+    }
+
+
+    private fun fetchSites() {
+        if (!isInternetAvailable()) {
+            loadOfflineSites()
+            return
+        }
+
+        RetrofitClient.apiService.fetchSites().enqueue(object : Callback<SiteResponse> {
+            override fun onResponse(call: Call<SiteResponse>, response: Response<SiteResponse>) {
+                if (response.isSuccessful) {
+                    val siteList = response.body()?.sites ?: emptyList()
+                    val adapter = ArrayAdapter(this@MappingActivity, android.R.layout.simple_spinner_dropdown_item, siteList.map { it.name })
+                    siteSpinner.adapter = adapter
+                    saveOfflineSites(siteList)
+                }
+            }
+            override fun onFailure(call: Call<SiteResponse>, t: Throwable) {}
+        })
+    }
+
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+}

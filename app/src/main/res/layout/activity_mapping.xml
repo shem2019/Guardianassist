@@ -1,48 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@color/white">
+
+    <!-- Search Bar for Filtering Sites -->
+    <EditText
+        android:id="@+id/etSearchSite"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search Site..."
+        android:drawableLeft="@android:drawable/ic_menu_search"
+        android:background="@android:drawable/editbox_background"
+        android:padding="12dp"
+        android:textSize="14sp" />
 
     <!-- Site Selection Spinner -->
+    <TextView
+        android:id="@+id/tvSelectSite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Site:"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_below="@id/etSearchSite"
+        android:layout_marginTop="12dp" />
+
     <Spinner
         android:id="@+id/spinnerSites"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:spinnerMode="dropdown" />
+        android:layout_below="@id/tvSelectSite"
+        android:layout_marginTop="8dp"
+        android:background="@android:drawable/editbox_background"
+        android:padding="8dp" />
 
-    <!-- Map Fragment -->
-    <androidx.fragment.app.FragmentContainerView
+    <!-- Google Map -->
+    <com.google.android.gms.maps.MapView
         android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="450dp"
         android:layout_below="@id/spinnerSites"
-        android:layout_above="@id/bottomActions"
-        android:layout_margin="8dp" />
+        android:layout_marginTop="16dp"
+        android:background="@android:color/darker_gray" />
 
-    <!-- Bottom Actions -->
-    <LinearLayout
-        android:id="@+id/bottomActions"
-        android:layout_width="match_parent"
+    <!-- Floating Button to Add Site -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddSite"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
-        android:padding="8dp">
+        android:src="@android:drawable/ic_input_add"
+        android:tint="@color/white"
+        android:backgroundTint="@color/green"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="185dp"
+        android:layout_below="@id/map"
+        android:layout_marginBottom="72dp" />
 
-        <Button
-            android:id="@+id/btnAddCheckpoint"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add Checkpoint"
-            android:layout_weight="1" />
+    <!-- Floating Button to Add Checkpoints -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddCheckpoint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_input_add"
+        android:tint="@color/white"
+        android:backgroundTint="@color/blue"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="16dp"
+        android:layout_below="@id/map"
+        android:layout_marginBottom="16dp" />
 
-        <Button
-            android:id="@+id/btnSavePatrolRoute"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Save Route"
-            android:layout_weight="1" />
-    </LinearLayout>
+    <!-- Checkpoints Label -->
+    <TextView
+        android:id="@+id/tvCheckpoints"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Added Checkpoints:"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_below="@id/fabAddCheckpoint"
+        android:layout_marginTop="12dp" />
+
+    <!-- RecyclerView for Listing Checkpoints -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewCheckpoints"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/tvCheckpoints"
+        android:layout_marginTop="12dp"
+        android:scrollbars="vertical" />
 
 </RelativeLayout>

@@ -40,6 +40,10 @@ class AdminDash : AppCompatActivity() {
             val intent =Intent(this, NfcActivity::class.java)
             startActivity(intent)
         }
+        binding.regsite.setOnClickListener {
+            val intent=Intent(this, MappingActivity::class.java)
+            startActivity(intent)
+        }
 
 
     }

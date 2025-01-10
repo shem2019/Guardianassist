@@ -48,6 +48,13 @@ app:layout_constraintTop_toBottomOf="@+id/cardview">
     android:layout_height="wrap_content"
     android:layout_marginStart="30dp"
     android:text="Admin Login" />
+
+    <Button
+    android:id="@+id/btnsignup"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="30dp"
+    android:text="Admin Signup" />
 <Space
     android:layout_width="0dp"
     android:layout_height="match_parent"

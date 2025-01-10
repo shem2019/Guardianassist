@@ -41,13 +41,21 @@
              />
     </LinearLayout>
 
+    <Button
+        android:id="@+id/regsite"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Register Site"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header" />
+
     <!-- RecyclerView for transactions -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/transactionsRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scrollbars="vertical"
-        app:layout_constraintTop_toBottomOf="@id/header"
+        app:layout_constraintTop_toBottomOf="@id/regsite"
         app:layout_constraintBottom_toTopOf="@id/registerUserButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
