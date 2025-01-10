@@ -70,6 +70,11 @@ class UserDashboardActivity : AppCompatActivity() {
         val realName = sessionManager.fetchRealName()
         binding.dashboardTitle.text = "Welcome ${realName ?: "User"}"
 
+        // button
+        binding.btnPatrol.setOnClickListener {
+            val intent =Intent(this, MappingActivity::class.java)
+            startActivity(intent)
+        }
 
         // Initialize hourly check progress
         startHourlyCheckService()
