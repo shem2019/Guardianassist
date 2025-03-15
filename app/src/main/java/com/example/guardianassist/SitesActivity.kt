@@ -42,6 +42,15 @@ class SitesActivity : AppCompatActivity() {
         recyclerViewSites = findViewById(R.id.recyclerViewSites)
         recyclerViewSites.layoutManager = LinearLayoutManager(this)
 
+        //
+        val usermng=findViewById<Button>(R.id.btnManageUsers)
+        usermng.setOnClickListener {
+            val intent = Intent(this, UserManagementActivity::class.java)
+            intent.putExtra("org_id", orgId)
+            intent.putExtra("org_name", orgName)
+            startActivity(intent)
+        }
+
         // ✅ Clicking a site navigates to NFC tags
         adapter = SiteAdapter(siteList, { selectedSite, switch ->
             toggleSiteStatus(selectedSite, switch)
@@ -127,6 +136,7 @@ class SitesActivity : AppCompatActivity() {
     }
 
     /** Toggle site activation status */
+    /** Toggle site activation status */
     private fun toggleSiteStatus(site: Site, switch: Switch) {
         switch.isEnabled = false // ✅ Disable toggle for 5 seconds
 
@@ -138,7 +148,11 @@ class SitesActivity : AppCompatActivity() {
             .enqueue(object : Callback<BasicResponse> {
                 override fun onResponse(call: Call<BasicResponse>, response: Response<BasicResponse>) {
                     if (response.isSuccessful) {
-                        fetchSites() // ✅ Refresh list after update
+                        // ✅ Update site status in list
+                        site.subscription_status = newStatus
+                        adapter.notifyDataSetChanged() // Refresh UI immediately
+
+                        Toast.makeText(this@SitesActivity, "Site status updated!", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(this@SitesActivity, "Error: ${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
                     }
@@ -153,4 +167,5 @@ class SitesActivity : AppCompatActivity() {
                 }
             })
     }
+
 }

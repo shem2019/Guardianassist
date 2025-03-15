@@ -1,39 +1,47 @@
 package com.example.guardianassist
 
 import android.os.Bundle
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.example.guardianassist.RegisterUserFragment
-import com.example.guardianassist.ResetPasswordFragment
+import com.example.guardianassist.databinding.ActivityUserManagementBinding
 
 class UserManagementActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityUserManagementBinding
+    private var orgId: Int = -1
+    private lateinit var orgName: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_user_management)
+        binding = ActivityUserManagementBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        // Load Register User fragment by default
-        loadFragment(RegisterUserFragment())
+        // Get organization details from intent
+        orgId = intent.getIntExtra("org_id", -1)
+        orgName = intent.getStringExtra("org_name") ?: "Unknown"
 
-        // Register User Button Click
-        val registerUserButton = findViewById<Button>(R.id.btnRegisterUser)
-        registerUserButton.setOnClickListener {
-            loadFragment(RegisterUserFragment())
+        binding.tvTitle.text = "User Management for $orgName"
+
+        // Load default fragment (Register User)
+        loadFragment(RegisterUserFragment.newInstance(orgId))
+
+        binding.btnRegisterUser.setOnClickListener {
+            loadFragment(RegisterUserFragment.newInstance(orgId))
         }
 
-        // Reset Password Button Click
-        val resetPasswordButton = findViewById<Button>(R.id.btnResetPassword)
-        resetPasswordButton.setOnClickListener {
-            loadFragment(ResetPasswordFragment())
+        binding.btnUpdateUserLogin.setOnClickListener {
+            loadFragment(UpdatePasswordFragment.newInstance(orgId))
+        }
+
+        binding.btnUserActivation.setOnClickListener {
+            loadFragment(UserActivationFragment.newInstance(orgId))
         }
     }
 
-    // Function to load fragments into the FrameLayout
+    /** Loads the selected fragment */
     private fun loadFragment(fragment: Fragment) {
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.userManagementFrame, fragment)
-        transaction.addToBackStack(null)
-        transaction.commit()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.userManagementFrame, fragment)
+            .commit()
     }
 }

@@ -103,7 +103,7 @@ class ResetPasswordFragment : Fragment() {
 
     // Reset password by calling the API
     private fun resetPassword(userId: Int, newPassword: String) {
-        val request = UpdatePasswordRequest(user_id = userId, new_password = newPassword)
+        val request = UpdatePasswordRequest(userId = userId, newPassword = newPassword) // ✅ Corrected parameter names
 
         RetrofitClient.apiService.updatePassword(request).enqueue(object : Callback<UpdatePasswordResponse> {
             override fun onResponse(call: Call<UpdatePasswordResponse>, response: Response<UpdatePasswordResponse>) {
@@ -119,6 +119,7 @@ class ResetPasswordFragment : Fragment() {
             }
         })
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

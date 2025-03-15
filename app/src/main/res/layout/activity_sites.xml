@@ -1,39 +1,66 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/white">
 
     <!-- Organization Title -->
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Sites"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:textStyle="bold"
-        android:textColor="@android:color/black"
+        android:textColor="@color/black"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="12dp" />
+        android:layout_marginBottom="12dp"
+        app:fontFamily="sans-serif-medium"/>
 
-    <!-- RecyclerView for Sites -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewSites"
+    <!-- CardView for RecyclerView -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_below="@id/tvTitle"
         android:layout_above="@id/fabAddSite"
-        android:paddingBottom="60dp"
-        android:scrollbars="vertical"/>
+        android:layout_margin="8dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewSites"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:scrollbars="vertical"/>
+    </androidx.cardview.widget.CardView>
 
     <!-- Floating Action Button to Add Site -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddSite"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@android:drawable/ic_input_add"
-        android:tint="@color/white"
-        android:backgroundTint="@color/blue"
+        android:src="@drawable/plus"
+    android:tint="@color/white"
+    app:backgroundTint="@color/primary"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentEnd="true"
+    android:layout_margin="20dp"/>
+
+    <!-- Manage Users Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnManageUsers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Manage Users"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"/>
+        android:layout_marginBottom="16dp"
+        app:cornerRadius="16dp"
+        android:backgroundTint="@color/primary"
+        android:textColor="@color/white"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="16sp"
+        android:layout_marginHorizontal="20dp"
+        android:paddingVertical="12dp"/>
 </RelativeLayout>

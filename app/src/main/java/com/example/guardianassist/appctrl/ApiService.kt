@@ -28,17 +28,6 @@ data class SignupResponse(
     val token: String? // Token is returned only on success
 )
 
-data class LoginRequest(
-    val username: String,
-    val password: String
-)
-
-// Data model for login response
-data class LoginResponse(
-    val status: String,
-    val token: String?,  // Token will be returned on success
-    val message: String? // Error message in case of failure
-)
 data class StoreResponse(
     val status: String,
     val message: String?
@@ -46,20 +35,12 @@ data class StoreResponse(
 
 
 data class NextUserIdResponse(val next_user_id: Int)
-data class RegisterUserRequest(val real_name: String, val username: String, val password: String)
 data class RegisterUserResponse(val status: String, val message: String, val user_id: Int, val token: String)
 data class UserResponse(val user_id: Int, val real_name: String, val username: String)
-data class UpdatePasswordRequest(val user_id: Int, val new_password: String)
-data class UpdatePasswordResponse(val status: String, val message: String)
 data class UserLoginRequest(val username: String, val password: String)
-data class UserLoginResponse(val status: String, val token: String?, val message: String?)
 data class FacialDataRequest(
     val token: String,
     val embedding: List<Float>
-)
-data class UserDetailsResponse(
-    val status: String,
-    val data: UserDetailsData?
 )
 
 data class UserDetailsData(
@@ -153,7 +134,7 @@ data class Site(
     val site_address: String,
     val latitude: Double,
     val longitude: Double,
-    val subscription_status: String
+    var subscription_status: String
 )
 
 data class SiteStatusUpdate(
@@ -195,6 +176,79 @@ data class NfcTag(
     val isActive: Boolean
 )
 
+data class LoginRequest(
+    val username: String,
+    val password: String
+)
+
+
+
+data class UserActivationRequest(
+    @SerializedName("user_id") val userId: Int,
+    @SerializedName("is_active") val isActive: Boolean
+)
+
+
+data class LoginResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("status") val status: String,  // ✅ Added "status"
+    @SerializedName("message") val message: String,
+    @SerializedName("token") val token: String?)
+
+data class User(
+    @SerializedName("user_id") val userId: Int,
+    @SerializedName("real_name") val realName: String,
+    @SerializedName("username") val username: String,
+    @SerializedName("is_active") val isActive: Boolean
+)
+data class UserListResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("users") val users: List<User>)
+
+
+
+data class UpdatePasswordRequest(
+    @SerializedName("user_id") val userId: Int,  // ✅ Ensure correct parameter name
+    @SerializedName("new_password") val newPassword: String  // ✅ Ensure correct parameter name
+)
+
+data class UpdatePasswordResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("status") val status: String,
+    @SerializedName("message") val message: String
+)
+data class RegisterUserRequest(
+    @SerializedName("real_name") val realName: String,
+    @SerializedName("username") val username: String,
+    @SerializedName("password") val password: String,
+    @SerializedName("org_id") val orgId: Int,  // ✅ Ensure org_id is included
+    @SerializedName("is_active") val isActive: Boolean
+)
+data class UserLoginResponse(
+    @SerializedName("success") val success: Boolean,  // ✅ Check if API uses "success" instead of "status"
+    @SerializedName("token") val token: String?,
+    @SerializedName("message") val message: String?)
+
+data class UserDetailsResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("status") val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("data") val data: UserData?
+)
+
+data class UserData(
+    @SerializedName("user_id") val userId: Int,
+    @SerializedName("real_name") val realName: String,
+    @SerializedName("username") val username: String,
+    @SerializedName("org_id") val orgId: Int
+)
+
+data class AdminLoginResponse(
+    @SerializedName("success") val success: Boolean,  // ✅ Now specific to admin login
+    @SerializedName("token") val token: String?,
+    @SerializedName("message") val message: String?
+)
+
 interface ApiService {
     //logs
     @POST("savelog.php")
@@ -209,30 +263,18 @@ interface ApiService {
         @Body request: SaveEventRequest
     ): Call<Void>
 
-    //
-    @GET("userdatafetch.php")
-    fun getUserDetails(@Header("Authorization") token: String): Call<UserDetailsResponse>
-
-
     @Headers("Content-Type: application/json")
     @POST("admin_signup.php") // This is the API endpoint on your server
     fun signupAdmin(@Body signupRequest: SignupRequest): Call<SignupResponse>
-    //admin login
-    @Headers("Content-Type: application/json")
-    @POST("admin_login.php")  // This is the API endpoint on your server
-    fun loginAdmin(@Body loginRequest: LoginRequest): Call<LoginResponse>
+
 
     @GET("get_next_user_id.php")
     fun getNextUserId(): Call<NextUserIdResponse>
 
-    @POST("register_user.php")
-    fun registerUser(@Body request: RegisterUserRequest): Call<RegisterUserResponse>
-
     @GET("fetch_users.php")
     fun fetchUsers(@Query("search") searchTerm: String): Call<List<UserResponse>>
 
-    @POST("update_password.php")
-    fun updatePassword(@Body request: UpdatePasswordRequest): Call<UpdatePasswordResponse>
+
     @POST("user_login.php")
     fun loginUser(@Body request: UserLoginRequest): Call<UserLoginResponse>
 
@@ -302,6 +344,30 @@ interface ApiService {
 
     //@POST("activate_nfc_tags.php")
   //  fun activateNfcTags(@Body request: ActivateTagsRequest): Call<BasicResponse>
+    @POST("register_user.php")
+    fun registerUser(@Body request: RegisterUserRequest): Call<LoginResponse>
+
+    @POST("user_login.php")
+    fun loginUser(@Body request: LoginRequest): Call<LoginResponse>
+
+
+    @GET("get_users.php")
+    fun getUsers(@Query("org_id") orgId: Int): Call<UserListResponse>
+
+    @POST("update_user_status.php")
+    fun updateUserStatus(@Body request: UserActivationRequest): Call<Void>
+
+
+
+    @POST("update_password.php")
+    fun updatePassword(@Body request: UpdatePasswordRequest): Call<UpdatePasswordResponse>
+
+    @GET("get_user_details.php")
+    fun getUserDetails(@Header("Authorization") token: String): Call<UserDetailsResponse>  // ✅ Ensure token is sent
+
+    @POST("admin_login.php")
+    fun loginAdmin(@Body request: LoginRequest): Call<AdminLoginResponse>
+
 
 }
 

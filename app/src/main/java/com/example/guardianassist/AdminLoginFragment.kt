@@ -10,105 +10,96 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.guardianassist.appctrl.RetrofitClient
 import com.example.guardianassist.appctrl.LoginRequest
-import com.example.guardianassist.appctrl.LoginResponse
-import com.example.guardianassist.appctrl.SaveLogRequest
+import com.example.guardianassist.appctrl.AdminLoginResponse
 import com.example.guardianassist.appctrl.SessionManager
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.textfield.TextInputEditText
+import com.example.guardianassist.databinding.FragmentAdminLoginBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 class AdminLoginFragment : Fragment() {
 
-    private lateinit var usernameInput: TextInputEditText
-    private lateinit var passwordInput: TextInputEditText
-    private lateinit var loginButton: MaterialButton
+    private var _binding: FragmentAdminLoginBinding? = null
+    private val binding get() = _binding!!
     private lateinit var sessionManager: SessionManager
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_admin_login, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentAdminLoginBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        // Initialize views
-        usernameInput = view.findViewById(R.id.Etadminusername)
-        passwordInput = view.findViewById(R.id.Etadminpassword)
-        loginButton = view.findViewById(R.id.loginButton)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        // Initialize SessionManager
         sessionManager = SessionManager(requireContext())
 
-        // Handle login button click
-        loginButton.setOnClickListener {
-            val username = usernameInput.text.toString().trim()
-            val password = passwordInput.text.toString().trim()
+        binding.loginButton.setOnClickListener {
+            val username = binding.Etadminusername.text.toString().trim()
+            val password = binding.Etadminpassword.text.toString().trim()
 
             if (username.isNotEmpty() && password.isNotEmpty()) {
-                // Perform login API call
+                Log.i("AdminLogin", "Attempting admin login for user: $username")
                 performLogin(username, password)
             } else {
+                Log.e("AdminLogin", "Login fields are empty.")
                 Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
             }
         }
-
-        return view
     }
 
-    // Function to make the API request for admin login
     private fun performLogin(username: String, password: String) {
         val loginRequest = LoginRequest(username, password)
+        Log.i("AdminLogin", "Sending login request: $loginRequest")
 
-        RetrofitClient.apiService.loginAdmin(loginRequest).enqueue(object : Callback<LoginResponse> {
-            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-                if (response.isSuccessful && response.body() != null) {
-                    val loginResponse = response.body()!!
-                    if (loginResponse.status == "success") {
-                        // Save admin token
-                        loginResponse.token?.let { sessionManager.saveAdminToken(it) }
+        RetrofitClient.apiService.loginAdmin(loginRequest).enqueue(object : Callback<AdminLoginResponse> {
+            override fun onResponse(call: Call<AdminLoginResponse>, response: Response<AdminLoginResponse>) {
+                Log.i("AdminLogin", "Received login response: $response")
 
-                        // Save login event
-                        loginResponse.token?.let { saveLog("Admin Login", it) }
+                try {
+                    if (response.isSuccessful) {
+                        val loginResponse = response.body()
+                        Log.i("AdminLogin", "Admin Login API Response Body: $loginResponse")
 
-                        Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_LONG).show()
+                        if (loginResponse?.success == true && loginResponse.token != null) {
+                            Log.i("AdminLogin", "Admin login successful. Token received: ${loginResponse.token}")
 
-                        // Navigate to Admin Dashboard
-                        val intent = Intent(requireContext(), AdminDash::class.java)
-                        startActivity(intent)
-                        requireActivity().finish()
+                            sessionManager.saveAdminToken(loginResponse.token)
+                            navigateToAdminDashboard()
+                        } else {
+                            Log.e("AdminLogin", "Admin login failed. Response: $loginResponse")
+                            Toast.makeText(requireContext(), loginResponse?.message ?: "Login failed", Toast.LENGTH_SHORT).show()
+                        }
                     } else {
-                        Toast.makeText(requireContext(), loginResponse.message, Toast.LENGTH_SHORT).show()
+                        val errorBody = response.errorBody()?.string()
+                        Log.e("AdminLogin", "Admin login response unsuccessful. HTTP Code: ${response.code()} - $errorBody")
+                        Toast.makeText(requireContext(), "Login failed", Toast.LENGTH_SHORT).show()
                     }
-                } else {
-                    Toast.makeText(requireContext(), "Failed to login. Try again.", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Log.e("AdminLogin", "JSON Parsing Error: ${e.message}")
+                    Toast.makeText(requireContext(), "Error parsing response", Toast.LENGTH_SHORT).show()
                 }
             }
 
-            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+            override fun onFailure(call: Call<AdminLoginResponse>, t: Throwable) {
+                Log.e("AdminLogin", "Admin login request failed: ${t.message}")
                 Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
-    private fun saveLog(eventType: String, token: String) {
-        Log.i("SaveLog", "Saving log with token: $token and event: $eventType") // Debug log
 
-        val logRequest = SaveLogRequest(event_type = eventType)
-        RetrofitClient.apiService.saveLog("Bearer $token", logRequest).enqueue(object : Callback<Void> {
-            override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                if (!response.isSuccessful) {
-                    Log.e("SaveLog", "Failed to save log. Response code: ${response.code()} - ${response.errorBody()?.string()}")
-                } else {
-                    Log.i("SaveLog", "Log saved successfully")
-                }
-            }
+    private fun navigateToAdminDashboard() {
+        Log.i("AdminLogin", "Navigating to AdminDashboardActivity.")
 
-            override fun onFailure(call: Call<Void>, t: Throwable) {
-                Log.e("SaveLog", "Error saving log: ${t.message}")
-            }
-        })
+        val intent = Intent(requireContext(), AdminDash::class.java)
+        startActivity(intent)
+
+        Log.i("AdminLogin", "Closing admin login activity.")
+        requireActivity().finish()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }
