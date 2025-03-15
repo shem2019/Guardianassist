@@ -56,25 +56,7 @@ data class SaveEventRequest(
 data class SaveLogRequest(
     val event_type: String
 )
-data class SaveHourlyCheckRequest(
-    val token: String, // References `token` column in `users`
-    val site_id: Int, // References `site_id` column in `sites`
-    val personal_safety: Boolean,
-    val site_secure: Boolean,
-    val equipment_functional: Boolean,
-    val comments: String? // Optional comments field
-)
 
-data class IncidentReportRequest(
-    val token: RequestBody,
-    val incidentType: RequestBody,
-    val customIncident: RequestBody?,
-    val incidentDescription: RequestBody,
-    val correctiveAction: RequestBody,
-    val severity: RequestBody,
-    val incidentImage: MultipartBody.Part?,
-    val correctiveImage: MultipartBody.Part?
-)
 data class SitesResponse(
     val success: Boolean,
     val sites: List<Site>
@@ -229,6 +211,26 @@ data class UserLoginResponse(
     @SerializedName("token") val token: String?,
     @SerializedName("message") val message: String?)
 
+
+data class AdminLoginResponse(
+    @SerializedName("success") val success: Boolean,  // ✅ Now specific to admin login
+    @SerializedName("token") val token: String?,
+    @SerializedName("message") val message: String?
+)
+
+
+data class BookOnRequest(
+    @SerializedName("user_id") val userId: Int,
+    @SerializedName("site_id") val siteId: Int,
+    @SerializedName("org_id") val orgId: Int,
+    @SerializedName("clock_in_tag") val clockInTag: String
+)
+data class BookOnResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String?,
+    @SerializedName("clock_in_time") val clockInTime: String?
+)
+
 data class UserDetailsResponse(
     @SerializedName("success") val success: Boolean,
     @SerializedName("status") val status: String?,
@@ -239,14 +241,52 @@ data class UserDetailsResponse(
 data class UserData(
     @SerializedName("user_id") val userId: Int,
     @SerializedName("real_name") val realName: String,
-    @SerializedName("username") val username: String,
-    @SerializedName("org_id") val orgId: Int
+    @SerializedName("org_id") val orgId: Int,
+    @SerializedName("site_id") val siteId: Int,  // ✅ Added site_id
+    @SerializedName("org_name") val orgName: String?,
+    @SerializedName("site_name") val siteName: String?
 )
 
-data class AdminLoginResponse(
-    @SerializedName("success") val success: Boolean,  // ✅ Now specific to admin login
-    @SerializedName("token") val token: String?,
-    @SerializedName("message") val message: String?
+
+
+data class BookOnStatusResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("is_booked_on") val isBookedOn: Boolean,
+    @SerializedName("site_id") val siteId: Int?,
+    @SerializedName("clock_in_tag") val clockInTag: String?,
+    @SerializedName("clock_in_time") val clockInTime: String?  // ✅ Added missing field
+)
+
+data class SaveHourlyCheckRequest(
+    val token: String,
+    val site_id: Int,
+    val org_id: Int,  // ✅ Added organization ID
+    val real_name: String,  // ✅ Added real name
+    val personal_safety: Boolean,
+    val site_secure: Boolean,
+    val equipment_functional: Boolean,
+    val comments: String?
+)
+
+data class IncidentReportRequest(
+    @SerializedName("token") val token: RequestBody,
+    @SerializedName("real_name") val realName: RequestBody,
+    @SerializedName("org_id") val orgId: RequestBody,
+    @SerializedName("site_id") val siteId: RequestBody,
+    @SerializedName("incident_type") val incidentType: RequestBody,
+    @SerializedName("custom_incident") val customIncident: RequestBody?,
+    @SerializedName("incident_description") val incidentDescription: RequestBody,
+    @SerializedName("corrective_action") val correctiveAction: RequestBody,
+    @SerializedName("severity") val severity: RequestBody,
+    @SerializedName("incident_image") val incidentImage: MultipartBody.Part?,
+    @SerializedName("corrective_image") val correctiveImage: MultipartBody.Part?
+)
+
+data class IncidentReportResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String,
+    @SerializedName("incident_image_path") val incidentImagePath: String?,
+    @SerializedName("corrective_image_path") val correctiveImagePath: String?
 )
 
 interface ApiService {
@@ -287,21 +327,9 @@ interface ApiService {
         @Part("token") tokenPart: RequestBody
     ): Call<Void>
 // hourly
-    @POST("posthourly.php") // Replace with your actual endpoint
+    @POST("save_hourly_check.php") // Replace with your actual endpoint
     fun saveHourlyCheck(@Body request: SaveHourlyCheckRequest): Call<Void>
 
-    @Multipart
-    @POST("incidentreport.php")
-    fun reportIncident(
-        @Part("token") token: RequestBody,
-        @Part("incident_type") incidentType: RequestBody, // Match backend parameter
-        @Part("custom_incident") customIncident: RequestBody?, // Match backend parameter
-        @Part("incident_description") incidentDescription: RequestBody, // Match backend parameter
-        @Part("corrective_action") correctiveAction: RequestBody, // Match backend parameter
-        @Part("severity") severity: RequestBody,
-        @Part incidentImage: MultipartBody.Part?,
-        @Part correctiveImage: MultipartBody.Part?
-    ): Call<Void>
 
     // 🚀 Add a new tag (NFC checkpoint)
     @POST("add_tag.php")
@@ -367,6 +395,33 @@ interface ApiService {
 
     @POST("admin_login.php")
     fun loginAdmin(@Body request: LoginRequest): Call<AdminLoginResponse>
+
+    @POST("book_on.php")
+    fun bookOn(@Header("Authorization") token: String, @Body request: BookOnRequest): Call<BookOnResponse>
+
+    @GET("check_book_on_status.php")
+    fun checkBookOnStatus(
+        @Header("Authorization") token: String,
+        @Query("user_id") userId: String,
+        @Query("site_id") siteId: Int,
+        @Query("date") date: String
+    ): Call<BookOnStatusResponse>
+
+    @Multipart
+    @POST("incidentreport.php")
+    fun reportIncident(
+        @Part("token") token: RequestBody,
+        @Part("real_name") realName: RequestBody,
+        @Part("org_id") orgId: RequestBody,
+        @Part("site_id") siteId: RequestBody,
+        @Part("incident_type") incidentType: RequestBody,
+        @Part("custom_incident") customIncident: RequestBody?,
+        @Part("incident_description") incidentDescription: RequestBody,
+        @Part("corrective_action") correctiveAction: RequestBody,
+        @Part("severity") severity: RequestBody,
+        @Part incidentImage: MultipartBody.Part?,
+        @Part correctiveImage: MultipartBody.Part?
+    ): Call<IncidentReportResponse>
 
 
 }

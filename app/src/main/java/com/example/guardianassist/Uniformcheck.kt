@@ -183,7 +183,7 @@ class Uniformcheck : AppCompatActivity() {
                 val payload = String(record.payload, Charsets.UTF_8)
                 val cleanedPayload = payload.substring(3) // Skip the language code prefix
 
-                if (cleanedPayload.contains("Book On", ignoreCase = true)) {
+                if (cleanedPayload.contains("Clock In", ignoreCase = true)) {
                     loadingDialog.dismiss()
                     isWaitingForTag = false
                     handler.removeCallbacks(nfcTimeoutRunnable) // Cancel timeout

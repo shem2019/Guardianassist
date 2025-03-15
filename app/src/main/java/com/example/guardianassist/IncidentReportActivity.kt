@@ -13,6 +13,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.guardianassist.appctrl.IncidentReportResponse
 import com.example.guardianassist.appctrl.RetrofitClient
 import com.example.guardianassist.appctrl.SessionManager
 import com.example.guardianassist.databinding.ActivityIncidentReportBinding
@@ -186,6 +187,10 @@ class IncidentReportActivity : AppCompatActivity() {
         binding.progressBar.visibility = View.VISIBLE
 
         val token = sessionManager.fetchUserToken()
+        val realName = sessionManager.fetchRealName() ?: "Unknown"
+        val orgId = sessionManager.fetchOrgId()
+        val siteId = sessionManager.fetchSiteId()
+
         val incidentType = binding.spinnerIncidentType.selectedItem.toString().trim()
         val customIncident = if (incidentType == "Other") binding.etCustomIncident.text.toString().trim() else null
         val incidentDescription = binding.etIncidentDescription.text.toString().trim()
@@ -205,16 +210,23 @@ class IncidentReportActivity : AppCompatActivity() {
         }
 
         val tokenBody = token.toRequestBody("text/plain".toMediaTypeOrNull())
+        val realNameBody = realName.toRequestBody("text/plain".toMediaTypeOrNull())
+        val orgIdBody = orgId.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+        val siteIdBody = siteId.toString().toRequestBody("text/plain".toMediaTypeOrNull())
         val incidentTypeBody = incidentType.toRequestBody("text/plain".toMediaTypeOrNull())
         val customIncidentBody = customIncident?.toRequestBody("text/plain".toMediaTypeOrNull())
         val incidentDescriptionBody = incidentDescription.toRequestBody("text/plain".toMediaTypeOrNull())
         val correctiveActionBody = correctiveAction.toRequestBody("text/plain".toMediaTypeOrNull())
         val severityBody = severity.toRequestBody("text/plain".toMediaTypeOrNull())
+
         val incidentImagePart = bitmapToMultipart("incident_image", capturedIncidentBitmap)
         val correctiveImagePart = bitmapToMultipart("corrective_image", capturedCorrectiveBitmap)
 
         RetrofitClient.apiService.reportIncident(
             tokenBody,
+            realNameBody,
+            orgIdBody,
+            siteIdBody,
             incidentTypeBody,
             customIncidentBody,
             incidentDescriptionBody,
@@ -222,28 +234,34 @@ class IncidentReportActivity : AppCompatActivity() {
             severityBody,
             incidentImagePart,
             correctiveImagePart
-        ).enqueue(object : Callback<Void> {
-            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+        ).enqueue(object : Callback<IncidentReportResponse> {  // ✅ FIX: Changed from `Callback<Void>` to `Callback<IncidentReportResponse>`
+            override fun onResponse(call: Call<IncidentReportResponse>, response: Response<IncidentReportResponse>) {
                 binding.progressBar.visibility = View.GONE
-                if (response.isSuccessful) {
+                Log.d("IncidentReport", "API Response Code: ${response.code()}")
+                Log.d("IncidentReport", "API Response Body: ${response.body()}")
+
+                if (response.isSuccessful && response.body()?.success == true) {
                     Toast.makeText(this@IncidentReportActivity, "Incident Report Submitted Successfully", Toast.LENGTH_SHORT).show()
                     finish()
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Log.e(TAG, "Submission failed with response code: ${response.code()}, body: $errorBody")
+                    Log.e("IncidentReport", "Submission failed: $errorBody")
                     Toast.makeText(this@IncidentReportActivity, "Submission failed: $errorBody", Toast.LENGTH_SHORT).show()
                 }
             }
 
-            override fun onFailure(call: Call<Void>, t: Throwable) {
+            override fun onFailure(call: Call<IncidentReportResponse>, t: Throwable) {
                 binding.progressBar.visibility = View.GONE
-                Log.e(TAG, "Submission failed: ${t.message}", t)
+                Log.e("IncidentReport", "Submission failed: ${t.message}", t)
                 Toast.makeText(this@IncidentReportActivity, "Submission failed: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
-    private fun bitmapToMultipart(name: String, bitmap: Bitmap?): MultipartBody.Part? {
+
+
+
+private fun bitmapToMultipart(name: String, bitmap: Bitmap?): MultipartBody.Part? {
         if (bitmap == null) return null
         val stream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)

@@ -16,10 +16,12 @@ import android.nfc.Tag
 import android.nfc.tech.Ndef
 import android.os.Build
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -42,16 +44,17 @@ class UserDashboardActivity : AppCompatActivity() {
     private lateinit var nfcAdapter: NfcAdapter
     private lateinit var pendingIntent: PendingIntent
     private lateinit var intentFilters: Array<IntentFilter>
-    private var isWaitingForTag = false
     private lateinit var loadingDialog: AlertDialog
-    private val timeoutHandler = Handler(Looper.getMainLooper())
     private lateinit var sessionManager: SessionManager
     private var errorSound: MediaPlayer? = null
-    private var elapsedSeconds = 0
-    private val totalDuration = 3600 // 1 hour in seconds
-    private val handler = Handler(Looper.getMainLooper())
-    private var isHourlyCheckHighlighted = false
-    private var mediaPlayer: MediaPlayer? = null
+    private val totalDuration = 3600000L
+    private lateinit var progressBar: ProgressBar
+    private lateinit var tvTimer: TextView
+    private var countDownTimer: CountDownTimer? = null
+    private var elapsedTime = 0L
+    private var isCheckDue = false
+
+
     companion object {
         private const val CHANNEL_ID = "HourlyCheckReminder"
         private const val NOTIFICATION_ID = 1
@@ -77,8 +80,12 @@ class UserDashboardActivity : AppCompatActivity() {
         }
 
         // Initialize hourly check progress
-        startHourlyCheckService()
-        initializeHourlyCheck()
+        progressBar = findViewById(R.id.progressBarHourlyCheck)
+        tvTimer = findViewById(R.id.tvTimer)
+
+        startHourlyCheckCountdown()
+
+
         //create notification channel
         createNotificationChannel()
 
@@ -118,8 +125,10 @@ class UserDashboardActivity : AppCompatActivity() {
 
         // Book On button
         binding.bookon.setOnClickListener {
-            startWaitingForTag()
+            val intent = Intent(this, BookOnActivity::class.java)
+            startActivity(intent)
         }
+
         binding.hourlycheck.setOnClickListener {
             val intent= Intent(this,HourlyCheckActivity::class.java)
             startActivity(intent)
@@ -135,101 +144,6 @@ class UserDashboardActivity : AppCompatActivity() {
         binding.incident.setOnClickListener {
             val intent= Intent(this,IncidentReportActivity::class.java)
             startActivity(intent)
-        }
-    }
-
-    private fun startWaitingForTag() {
-        isWaitingForTag = true
-
-        // Show loading dialog
-        loadingDialog = AlertDialog.Builder(this)
-            .setTitle("Waiting to Scan NFC Tag")
-            .setMessage("Place your device near an NFC tag...")
-            .setCancelable(false)
-            .create()
-        loadingDialog.show()
-        setupNfc()
-
-        // Enable NFC foreground dispatch
-        nfcAdapter.enableForegroundDispatch(this, pendingIntent, intentFilters, null)
-
-        // Set a timeout to stop waiting after 5 seconds
-        timeoutHandler.postDelayed({
-            if (isWaitingForTag) {
-                stopWaitingForTag()
-                Toast.makeText(this, "NFC scan timed out.", Toast.LENGTH_SHORT).show()
-            }
-        }, 5000)
-    }
-
-    private fun stopWaitingForTag() {
-        isWaitingForTag = false
-
-        // Dismiss loading dialog
-        if (this::loadingDialog.isInitialized && loadingDialog.isShowing) {
-            loadingDialog.dismiss()
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (isWaitingForTag) {
-            nfcAdapter.enableForegroundDispatch(this, pendingIntent, intentFilters, null)
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        if (::nfcAdapter.isInitialized) {
-            nfcAdapter.disableForegroundDispatch(this)
-        }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        if (isWaitingForTag && NfcAdapter.ACTION_TAG_DISCOVERED == intent.action) {
-            val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
-            if (tag != null) {
-                handleNfcTag(tag)
-            } else {
-                Toast.makeText(this, "No NFC tag detected", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun handleNfcTag(tag: Tag) {
-        stopWaitingForTag()
-
-        try {
-            val ndef = Ndef.get(tag)
-            if (ndef != null) {
-                ndef.connect()
-                val ndefMessage: NdefMessage? = ndef.ndefMessage
-                ndef.close()
-
-                if (ndefMessage != null && ndefMessage.records.isNotEmpty()) {
-                    val record: NdefRecord = ndefMessage.records[0]
-                    val payload = String(record.payload, Charsets.UTF_8)
-                    val cleanedPayload = payload.substring(3) // Skip the language code prefix
-
-                    if (cleanedPayload.contains("Book On", ignoreCase = true)) {
-                        // Extract site name from payload
-                        val siteName = cleanedPayload.replace("Book On", "").trim()
-                        saveEvent("Book On", siteName)
-                        Toast.makeText(this, "Book On successful for site: $siteName", Toast.LENGTH_LONG).show()
-                    } else {
-                        errorSound?.start()
-                        Toast.makeText(this, "This is not a Book On tag", Toast.LENGTH_LONG).show()
-                    }
-                } else {
-                    Toast.makeText(this, "NFC tag is empty.", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(this, "This tag does not support NDEF.", Toast.LENGTH_SHORT).show()
-            }
-        } catch (e: Exception) {
-            Log.e("NFC", "Error reading NFC tag", e)
-            Toast.makeText(this, "Error reading NFC tag.", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -251,133 +165,47 @@ class UserDashboardActivity : AppCompatActivity() {
         })
     }
 
+    /// Hourly check
+    private fun startHourlyCheckCountdown() {
+        countDownTimer?.cancel()
 
+        countDownTimer = object : CountDownTimer(totalDuration, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                elapsedTime = totalDuration - millisUntilFinished
+                val progress = ((elapsedTime.toFloat() / totalDuration) * 100).toInt()
+                progressBar.progress = progress
 
-    private fun saveEvent(eventType: String, siteName: String) {
-        val token = sessionManager.fetchUserToken()
-        val realName = sessionManager.fetchRealName()
-        val eventTime = Calendar.getInstance().time.toString()
+                val minutesLeft = (millisUntilFinished / 60000).toInt()
+                val secondsLeft = (millisUntilFinished % 60000 / 1000).toInt()
+                tvTimer.text = String.format("%02d:%02d", minutesLeft, secondsLeft)
 
-        val eventRequest = SaveEventRequest(eventType, siteName, realName ?: "Unknown", eventTime)
-        RetrofitClient.apiService.saveEvent("Bearer $token", eventRequest).enqueue(object : Callback<Void> {
-            override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                if (!response.isSuccessful) {
-                    Log.e("EVENT", "Failed to save event")
+                if (minutesLeft == 5 && !isCheckDue) {
+                    isCheckDue = true
+                    showHourlyCheckAlert()
                 }
             }
 
-            override fun onFailure(call: Call<Void>, t: Throwable) {
-                Log.e("EVENT", "Error saving event: ${t.message}")
+            override fun onFinish() {
+                isCheckDue = false
+                progressBar.progress = 100
+                tvTimer.text = "00:00"
+                resetHourlyCheck()
             }
-        })
-    }
-    private fun checkAndRequestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    android.Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
-                    REQUEST_PERMISSION_CODE
-                )
-            }
-        }
+        }.start()
     }
 
-    private fun startHourlyCheckService() {
-        val serviceIntent = Intent(this, HourlyCheckService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent)
-        } else {
-            startService(serviceIntent)
-        }
+    private fun resetHourlyCheck() {
+        Toast.makeText(this, "Hourly Check is due. Please complete it.", Toast.LENGTH_LONG).show()
+        startHourlyCheckCountdown()
     }
 
-    private fun initializeHourlyCheck() {
-        val progressBar = binding.hourlycheck.findViewById<ProgressBar>(R.id.progressBarHourlyCheck)
-
-        // Start updating the progress bar
-        handler.postDelayed(object : Runnable {
-            override fun run() {
-                if (elapsedSeconds < totalDuration) {
-                    elapsedSeconds++
-                    progressBar.progress = elapsedSeconds
-
-                    // Update progress bar and card status
-                    if (elapsedSeconds == totalDuration) {
-                        highlightHourlyCheck()
-                    }
-
-                    handler.postDelayed(this, 1000) // Repeat every second
-                }
-            }
-        }, 1000)
-    }
-
-    private fun highlightHourlyCheck() {
-        if (!isHourlyCheckHighlighted) {
-            val hourlyCheckCard = binding.hourlycheck
-            hourlyCheckCard.setCardBackgroundColor(Color.parseColor("#FFDD57")) // Highlight in yellow
-            isHourlyCheckHighlighted = true
-
-            // Show alert dialog, play sound, and send notification
-            showHourlyCheckDialog()
-            playReminderSound()
-            showNotification()
-        }
-    }
-
-    private fun showHourlyCheckDialog() {
-        val dialog = AlertDialog.Builder(this)
-            .setTitle("Hourly Check Due")
-            .setMessage("It's time to perform the hourly check. Please proceed.")
+    private fun showHourlyCheckAlert() {
+        AlertDialog.Builder(this)
+            .setTitle("Hourly Check Reminder")
+            .setMessage("Your hourly check is due in 5 minutes. Please complete it soon!")
             .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
             .setCancelable(false)
-            .create()
-        dialog.show()
-    }
-    private fun playReminderSound() {
-        // Initialize MediaPlayer with the sound resource
-        mediaPlayer = MediaPlayer.create(this, R.raw.error)
-        mediaPlayer?.start()
-    }
-
-
-    private fun showNotification() {
-        val intent = Intent(this, UserDashboardActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(
-            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.notification)
-            .setContentTitle("Hourly Check Reminder")
-            .setContentText("It's time to perform your hourly check.")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .build()
-
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                android.Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }
-        NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification)
+            .show()
     }
 
     private fun createNotificationChannel() {
@@ -396,22 +224,7 @@ class UserDashboardActivity : AppCompatActivity() {
 
 
 
-    private fun setupNfc() {
-        nfcAdapter = NfcAdapter.getDefaultAdapter(this)
-        if (nfcAdapter == null) {
-            Toast.makeText(this, "NFC not supported on this device", Toast.LENGTH_SHORT).show()
-            return
-        }
 
-        pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
-            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        nfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null)
-    }
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_PERMISSION_CODE) {

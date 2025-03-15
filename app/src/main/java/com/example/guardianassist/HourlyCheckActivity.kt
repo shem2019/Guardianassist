@@ -91,7 +91,7 @@ class HourlyCheckActivity : AppCompatActivity() {
         loadingDialog = AlertDialog.Builder(this)
             .setTitle("Waiting to Scan NFC Tag")
             .setMessage("Place your device near a tag marked 'Hourly Check'")
-            .setCancelable(false)
+            
             .create()
         loadingDialog.show()
     }
@@ -134,7 +134,7 @@ class HourlyCheckActivity : AppCompatActivity() {
                 val payload = String(record.payload, Charsets.UTF_8)
                 val cleanedPayload = payload.substring(3) // Skip the language code prefix
 
-                if (cleanedPayload.contains("Hourly Check", ignoreCase = true)) {
+                if (cleanedPayload.contains("", ignoreCase = true)) {
                     loadingDialog.dismiss()
                     isWaitingForTag = false
                     enableUI() // Enable checklist and submit button
@@ -166,12 +166,25 @@ class HourlyCheckActivity : AppCompatActivity() {
     }
 
     private fun submitHourlyCheck() {
-        val token = sessionManager.fetchUserToken() ?: return
-        val siteId = intent.getIntExtra("site_id", 1) // Ensure the site ID is passed in the intent
-        if (siteId == -1) {
-            Toast.makeText(this, "Invalid site ID", Toast.LENGTH_SHORT).show()
+        val token = sessionManager.fetchUserToken()
+        val siteId = sessionManager.fetchSiteId()
+        val orgId = sessionManager.fetchOrgId()
+        val realName = sessionManager.fetchRealName()
+
+        // ✅ Log values before making API request
+        Log.d("HourlyCheck", "Submitting Hourly Check:")
+        Log.d("HourlyCheck", "Token: $token")
+        Log.d("HourlyCheck", "User ID: ${sessionManager.fetchUserId()}")
+        Log.d("HourlyCheck", "Org ID: $orgId")
+        Log.d("HourlyCheck", "Site ID: $siteId")
+        Log.d("HourlyCheck", "Real Name: $realName")
+
+        if (token.isNullOrEmpty() || siteId == -1 || orgId == -1) {
+            Log.e("HourlyCheck", "Invalid site or orgname!")
+            Toast.makeText(this, "Invalid site or organization details", Toast.LENGTH_SHORT).show()
             return
         }
+
         val personalSafety = binding.cbPersonalSafety.isChecked
         val siteSecure = binding.cbSiteSecure.isChecked
         val equipmentFunctional = binding.cbEquipmentFunctional.isChecked
@@ -180,26 +193,37 @@ class HourlyCheckActivity : AppCompatActivity() {
         val request = SaveHourlyCheckRequest(
             token = token,
             site_id = siteId,
+            org_id = orgId,
+            real_name = realName ?: "Unknown User",
             personal_safety = personalSafety,
             site_secure = siteSecure,
             equipment_functional = equipmentFunctional,
             comments = comments
         )
 
+        Log.d("HourlyCheck", "Sending request: $request")
+
         RetrofitClient.apiService.saveHourlyCheck(request).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                Log.d("HourlyCheck", "API Response Code: ${response.code()}")
+
                 if (response.isSuccessful) {
                     Toast.makeText(this@HourlyCheckActivity, "Hourly Check Submitted Successfully", Toast.LENGTH_SHORT).show()
-                    finish() // Return to dashboard
+                    finish()
                 } else {
-                    Toast.makeText(this@HourlyCheckActivity, "Failed to Submit Hourly Check: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Log.e("HourlyCheck", "Failed: ${response.errorBody()?.string()}")
+                    Toast.makeText(this@HourlyCheckActivity, "Failed to Submit Hourly Check", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<Void>, t: Throwable) {
-                Toast.makeText(this@HourlyCheckActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                Log.e("HourlyCheck", "Network Error: ${t.message}")
+                Toast.makeText(this@HourlyCheckActivity, "Network error, check your connection", Toast.LENGTH_SHORT).show()
             }
         })
     }
+
+
+
 
 }
