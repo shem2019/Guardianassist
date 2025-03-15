@@ -1,0 +1,86 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/white"
+    android:gravity="center">
+
+    <!-- Organization Name -->
+    <TextView
+        android:id="@+id/tvOrganizationName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Organization: Unknown"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:textColor="@android:color/black" />
+
+    <!-- Site Name -->
+    <TextView
+        android:id="@+id/tvSiteName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Site: Unknown"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:textColor="@android:color/black" />
+
+    <!-- User Name -->
+    <TextView
+        android:id="@+id/tvRealName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Name: User"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:textColor="@android:color/black" />
+
+    <!-- Clock-In Time -->
+    <TextView
+        android:id="@+id/tvClockInTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clock In Time: Not Available"
+        android:textSize="16sp"
+        android:padding="8dp"
+        android:textColor="@android:color/darker_gray" />
+
+    <!-- Clock Out Status -->
+    <TextView
+        android:id="@+id/tvClockOutStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Not Clocked Out"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:textColor="@android:color/holo_red_dark"
+        android:gravity="center" />
+
+    <!-- Clock Out Status Icon -->
+    <ImageView
+        android:id="@+id/ivClockOutStatus"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/cancel"
+        android:visibility="visible"
+        android:layout_gravity="center" />
+
+    <!-- Scan NFC Button -->
+    <Button
+        android:id="@+id/btnScanNfc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Scan Clock-Out NFC"
+        android:backgroundTint="@color/blue"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:layout_marginTop="16dp"
+        android:padding="12dp" />
+
+</LinearLayout>

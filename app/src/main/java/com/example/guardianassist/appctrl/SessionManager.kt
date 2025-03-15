@@ -16,9 +16,10 @@ class SessionManager(context: Context) {
         private const val USER_ID_KEY = "user_id"
         private const val ORG_ID_KEY = "org_id"
         private const val ORG_NAME_KEY = "org_name"
-
+        private const val IS_ON_SITE_KEY = "is_on_site"
         private const val SITE_ID_KEY = "site_id"
         private const val SITE_NAME_KEY = "site_name"
+        private const val BOOK_ON_TIME_KEY = "book_on_time"
     }
 
     // Save admin token to SharedPreferences
@@ -116,6 +117,31 @@ class SessionManager(context: Context) {
         Log.d("SessionManager", "Fetched Site Name: $siteName") // ✅ Debugging Log
         return siteName
     }
+    fun saveOnSiteStatus(isOnSite: Boolean) {
+        val editor = prefs.edit()
+        editor.putBoolean(IS_ON_SITE_KEY, isOnSite)
+        editor.apply()
+    }
+
+    fun fetchOnSiteStatus(): Boolean {
+        return prefs.getBoolean(IS_ON_SITE_KEY, false)
+    }
+    fun saveBookOnTime(bookOnTime: String) {
+        prefs.edit().putString(BOOK_ON_TIME_KEY, bookOnTime).apply()
+    }
+
+    fun saveIsOnSite(isOnSite: Boolean) {
+        val editor = prefs.edit()
+        editor.putBoolean("is_on_site", isOnSite)
+        editor.apply()
+    }
+
+    fun fetchIsOnSite(): Boolean {
+        return prefs.getBoolean("is_on_site", false) // Default to false if not found
+    }
+
+    fun fetchBookOnTime(): String? = prefs.getString(BOOK_ON_TIME_KEY, "N/A")
+
 
     // Clear session (on logout)
     fun clearSession() {

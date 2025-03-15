@@ -289,6 +289,32 @@ data class IncidentReportResponse(
     @SerializedName("corrective_image_path") val correctiveImagePath: String?
 )
 
+
+data class ClockInRequest(
+    @SerializedName("user_id") val userId: Int,
+    @SerializedName("site_id") val siteId: Int,
+    @SerializedName("org_id") val orgId: Int,
+    @SerializedName("clock_in_tag") val clockInTag: String
+)
+
+data class ClockInResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String?
+)
+data class ClockOutRequest(
+    @SerializedName("user_id") val userId: Int,
+    @SerializedName("site_id") val siteId: Int,
+    @SerializedName("org_id") val orgId: Int,
+    @SerializedName("clock_out_tag") val clockOutTag: String
+)
+
+
+data class ClockOutResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String?
+)
+
+
 interface ApiService {
     //logs
     @POST("savelog.php")
@@ -423,6 +449,13 @@ interface ApiService {
         @Part correctiveImage: MultipartBody.Part?
     ): Call<IncidentReportResponse>
 
+    @POST("book_on.php")
+    fun bookOn(
+        @Header("Authorization") token: String,
+        @Body request: ClockInRequest
+    ): Call<ClockInResponse>
 
+    @POST("clock_out.php")
+    fun clockOut(@Body request: ClockOutRequest): Call<ClockOutResponse>
 }
 

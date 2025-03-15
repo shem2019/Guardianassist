@@ -78,6 +78,10 @@ class UserDashboardActivity : AppCompatActivity() {
             val intent =Intent(this, MappingActivity::class.java)
             startActivity(intent)
         }
+        binding.bookoff.setOnClickListener {
+            val intent=Intent(this,ClockOutActivity::class.java)
+            startActivity(intent)
+        }
 
         // Initialize hourly check progress
         progressBar = findViewById(R.id.progressBarHourlyCheck)

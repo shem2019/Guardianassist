@@ -118,6 +118,7 @@ class BookOnActivity : AppCompatActivity() {
                     val retrievedSiteId = responseBody.siteId ?: -1
                     val tagName = responseBody.clockInTag ?: "Unknown"
                     val bookingTime = responseBody.clockInTime ?: "N/A"
+                    responseBody.clockInTime?.let { sessionManager.saveBookOnTime(it) }
 
                     // ✅ Fetch site name if siteId is available
 
@@ -126,33 +127,34 @@ class BookOnActivity : AppCompatActivity() {
                     if (isBookedOn) {
                         sessionManager.saveSiteId(retrievedSiteId)
                         sessionManager.saveClockInTag(tagName)
+                        sessionManager.saveBookOnTime(bookingTime)
 
                         tvBookingStatus.text = "Already Booked On"
                         tvBookingStatus.setTextColor(Color.GREEN)
                         ivBookingStatus.setImageResource(R.drawable.tick)
                         tvBookingTime.text = "Booking Time: $bookingTime"
                     } else {
-                        Log.e("CheckBookOn", "User is NOT booked on")
+                      //  Log.e("CheckBookOn", "User is NOT booked on")
                         tvBookingStatus.text = "Not yet booked on"
                         tvBookingStatus.setTextColor(Color.RED)
                         ivBookingStatus.setImageResource(R.drawable.cancel)
                         tvBookingTime.text = "Booking Time: Not yet booked on"
                     }
                 } else {
-                    Log.e("CheckBookOn", "Error: ${response.errorBody()?.string()}")
+                 //   Log.e("CheckBookOn", "Error: ${response.errorBody()?.string()}")
                     Toast.makeText(this@BookOnActivity, "Failed to check booking status", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<BookOnStatusResponse>, t: Throwable) {
-                Log.e("CheckBookOn", "Network Error: ${t.message}", t)
+               // Log.e("CheckBookOn", "Network Error: ${t.message}", t)
             }
         })
     }
     private fun fetchAndStoreSiteName(siteId: Int) {
         val token = sessionManager.fetchUserToken() ?: return
 
-        Log.d("BookOn", "Fetching site name for siteId=$siteId")
+       // Log.d("BookOn", "Fetching site name for siteId=$siteId")
 
         RetrofitClient.apiService.getSites(sessionManager.fetchOrgId()).enqueue(object : Callback<SiteResponse> {
             override fun onResponse(call: Call<SiteResponse>, response: Response<SiteResponse>) {
@@ -161,12 +163,12 @@ class BookOnActivity : AppCompatActivity() {
                     val selectedSite = siteList.find { it.site_id == siteId }
 
                     if (selectedSite != null) {
-                        Log.d("BookOn", "Site Name Retrieved: ${selectedSite.site_name}")
+                      // Log.d("BookOn", "Site Name Retrieved: ${selectedSite.site_name}")
 
                         // ✅ Save the site name in session
                         sessionManager.saveSiteName(selectedSite.site_name)
 
-                        Log.d("BookOn", "Site Name saved in SessionManager: ${selectedSite.site_name}")
+                      //  Log.d("BookOn", "Site Name saved in SessionManager: ${selectedSite.site_name}")
 
                         // ✅ Update UI with the site name
                         tvSiteName.text = "Site: ${selectedSite.site_name}"
@@ -279,16 +281,17 @@ class BookOnActivity : AppCompatActivity() {
 
         val request = BookOnRequest(userId, siteId, orgId, tagType)
 
-        Log.d("BookOn", "Sending BookOn request: $request")
+        //Log.d("BookOn", "Sending BookOn request: $request")
 
         RetrofitClient.apiService.bookOn("Bearer $token", request).enqueue(object : Callback<BookOnResponse> {
             override fun onResponse(call: Call<BookOnResponse>, response: Response<BookOnResponse>) {
-                Log.d("BookOn", "API Response Code: ${response.code()}")
+                //Log.d("BookOn", "API Response Code: ${response.code()}")
 
                 if (response.isSuccessful) {
                     val bookOnResponse = response.body()
                     if (bookOnResponse?.success == true) {
-                        Log.d("BookOn", "Book On Successful: ${bookOnResponse.message}")
+                        sessionManager.saveOnSiteStatus(true)
+                       // Log.d("BookOn", "Book On Successful: ${bookOnResponse.message}")
 
                         // ✅ Save site details in session
                         sessionManager.saveSiteId(siteId)
@@ -296,7 +299,7 @@ class BookOnActivity : AppCompatActivity() {
 
                         Toast.makeText(this@BookOnActivity, bookOnResponse.message, Toast.LENGTH_SHORT).show()
                     } else {
-                        Log.e("BookOn", "Book On Failed: ${bookOnResponse?.message}")
+                       // Log.e("BookOn", "Book On Failed: ${bookOnResponse?.message}")
                         Toast.makeText(this@BookOnActivity, "Failed to Book On", Toast.LENGTH_SHORT).show()
                     }
                 } else {
