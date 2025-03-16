@@ -211,11 +211,12 @@ data class UserLoginResponse(
     @SerializedName("token") val token: String?,
     @SerializedName("message") val message: String?)
 
-
 data class AdminLoginResponse(
-    @SerializedName("success") val success: Boolean,  // ✅ Now specific to admin login
+    @SerializedName("success") val success: Boolean,
     @SerializedName("token") val token: String?,
-    @SerializedName("message") val message: String?
+    @SerializedName("message") val message: String?,
+    @SerializedName("org_id") val orgId: Int? = -1,  // ✅ Default to -1
+    @SerializedName("site_id") val siteId: Int? = -1  // ✅ Default to -1
 )
 
 

@@ -49,43 +49,29 @@ class AdminLoginFragment : Fragment() {
 
     private fun performLogin(username: String, password: String) {
         val loginRequest = LoginRequest(username, password)
-        Log.i("AdminLogin", "Sending login request: $loginRequest")
 
         RetrofitClient.apiService.loginAdmin(loginRequest).enqueue(object : Callback<AdminLoginResponse> {
             override fun onResponse(call: Call<AdminLoginResponse>, response: Response<AdminLoginResponse>) {
-                Log.i("AdminLogin", "Received login response: $response")
-
-                try {
-                    if (response.isSuccessful) {
-                        val loginResponse = response.body()
-                        Log.i("AdminLogin", "Admin Login API Response Body: $loginResponse")
-
-                        if (loginResponse?.success == true && loginResponse.token != null) {
-                            Log.i("AdminLogin", "Admin login successful. Token received: ${loginResponse.token}")
-
-                            sessionManager.saveAdminToken(loginResponse.token)
-                            navigateToAdminDashboard()
-                        } else {
-                            Log.e("AdminLogin", "Admin login failed. Response: $loginResponse")
-                            Toast.makeText(requireContext(), loginResponse?.message ?: "Login failed", Toast.LENGTH_SHORT).show()
-                        }
+                if (response.isSuccessful) {
+                    val loginResponse = response.body()
+                    if (loginResponse?.success == true && loginResponse.token != null) {
+                        sessionManager.saveAdminToken(loginResponse.token)
+                        sessionManager.saveAdminPrivileges(loginResponse.orgId, loginResponse.siteId)  // ✅ Save Access Level
+                        navigateToAdminDashboard()
                     } else {
-                        val errorBody = response.errorBody()?.string()
-                        Log.e("AdminLogin", "Admin login response unsuccessful. HTTP Code: ${response.code()} - $errorBody")
-                        Toast.makeText(requireContext(), "Login failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), loginResponse?.message ?: "Login failed", Toast.LENGTH_SHORT).show()
                     }
-                } catch (e: Exception) {
-                    Log.e("AdminLogin", "JSON Parsing Error: ${e.message}")
-                    Toast.makeText(requireContext(), "Error parsing response", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Login failed", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<AdminLoginResponse>, t: Throwable) {
-                Log.e("AdminLogin", "Admin login request failed: ${t.message}")
                 Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
+
 
 
     private fun navigateToAdminDashboard() {

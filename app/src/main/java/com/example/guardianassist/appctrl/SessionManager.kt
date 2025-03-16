@@ -20,6 +20,8 @@ class SessionManager(context: Context) {
         private const val SITE_ID_KEY = "site_id"
         private const val SITE_NAME_KEY = "site_name"
         private const val BOOK_ON_TIME_KEY = "book_on_time"
+        private const val ADMIN_ORG_ID_KEY = "admin_org_id"
+        private const val ADMIN_SITE_ID_KEY = "admin_site_id"
     }
 
     // Save admin token to SharedPreferences
@@ -139,8 +141,27 @@ class SessionManager(context: Context) {
     fun fetchIsOnSite(): Boolean {
         return prefs.getBoolean("is_on_site", false) // Default to false if not found
     }
+    fun saveAdminPrivileges(orgId: Int?, siteId: Int?) {
+        prefs.edit().apply {
+            putInt(ADMIN_ORG_ID_KEY, orgId ?: -1)  // Default `-1` for unrestricted access
+            putInt(ADMIN_SITE_ID_KEY, siteId ?: -1)
+            apply()
+        }
+        Log.d("SessionManager", "✅ Admin Privileges Saved: OrgID=$orgId, SiteID=$siteId")
+    }
+
 
     fun fetchBookOnTime(): String? = prefs.getString(BOOK_ON_TIME_KEY, "N/A")
+
+
+    fun fetchAdminOrgId(): Int {
+        return prefs.getInt("admin_org_id", -1)
+    }
+
+    fun fetchAdminSiteId(): Int {
+        return prefs.getInt("admin_site_id", -1)
+    }
+
 
 
     // Clear session (on logout)
