@@ -1,100 +1,72 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
     android:background="@color/white">
 
-    <!-- Header -->
+    <!-- Welcome Message -->
     <TextView
-        android:id="@+id/tvPatrolHeader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:text="Patrol Activity"
-        android:textSize="18sp"
+        android:id="@+id/tvWelcomeMessage"
+        android:text="Welcome, User! /n You are patrolling: Site Name"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="@color/black"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Current Checkpoint -->
-    <TextView
-        android:id="@+id/tvCurrentCheckpointLabel"
-        android:layout_width="wrap_content"
+        android:textColor="@android:color/black"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Current Checkpoint:"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:layout_below="@id/tvPatrolHeader"
-        android:layout_marginTop="16dp" />
+        android:gravity="center"
+        android:paddingBottom="12dp"/>
 
-    <TextView
-        android:id="@+id/currentCheckpointView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tvCurrentCheckpointLabel"
-        android:layout_marginTop="8dp"
-        android:text="Checkpoint 1"
-        android:textSize="16sp"
-        android:textColor="@color/black" />
-
-    <!-- Next Checkpoint -->
-    <TextView
-        android:id="@+id/tvNextCheckpointLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/currentCheckpointView"
-        android:layout_marginTop="16dp"
-        android:text="Next Checkpoint:"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="@color/black" />
-
-    <TextView
-        android:id="@+id/nextCheckpointView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tvNextCheckpointLabel"
-        android:layout_marginTop="8dp"
-        android:text="Checkpoint 2"
-        android:textSize="16sp"
-        android:textColor="@color/black" />
-
-    <!-- Patrol Progress -->
-    <TextView
-        android:id="@+id/tvPatrolProgressLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/nextCheckpointView"
-        android:layout_marginTop="16dp"
-        android:text="Patrol Progress:"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="@color/black" />
-
+    <!-- Progress Indicator -->
     <ProgressBar
         android:id="@+id/patrolProgressBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tvPatrolProgressLabel"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
-        android:indeterminate="false"
-        android:progress="0"
-        android:max="100"
-        android:progressTint="@color/green" />
+        style="?android:attr/progressBarStyleHorizontal"
+        android:indeterminate="true"
+        android:progressTint="@color/blue"/>
 
-    <!-- Complete Button -->
-    <Button
-        android:id="@+id/btnCompletePatrol"
+    <!-- Patrol Areas Table -->
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:text="Complete Patrol"
-        android:textSize="16sp"
-        android:textColor="@color/white"
-        android:background="@color/blue"
-        android:layout_marginTop="24dp"
-        android:visibility="gone" />
-</RelativeLayout>
+        android:text="Summary Patrol Records"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textSize="24dp"/>
+    <TableLayout
+        android:id="@+id/patrolTable"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:stretchColumns="1"/>
+
+    <!-- RecyclerView for Patrol Summary -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Detailed Records"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textSize="24dp"/>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/patrolRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:scrollbars="vertical"/>
+
+    <!-- End Patrol Button -->
+    <Button
+        android:id="@+id/btnEndPatrol"
+        android:text="End Patrol"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:backgroundTint="@color/red"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="12dp"/>
+</LinearLayout>

@@ -33,29 +33,30 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDashboard"
-            android:layout_width="85dp"
-            android:layout_height="wrap_content"
-            android:text="Dash" />
-
-        <Button
-            android:id="@+id/btnPatrol"
-            android:layout_width="86dp"
-            android:layout_height="wrap_content"
-
-            android:text="Patrol" />
-
-        <Button
-            android:id="@+id/btnTasks"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tasks" />
-        <Button
+            app:cornerRadius="4dp"
+
+            android:text="DASHBOARD" />
+        <Space
+            android:layout_width="30dp"
+            android:layout_height="match_parent"/>
+
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnlogout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="logout" />
+            app:cornerRadius="4dp"
+            android:textColor="@color/red"
+            app:icon="@drawable/shutdown"
+            app:iconTint="@null"
+            android:text="LOGOUT" />
+
+
+
     </LinearLayout>
 
     <!-- FrameLayout for switching layouts -->
@@ -95,7 +96,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="30dp"
-                    android:text="Book On"
+                    android:text="Clock In"
                     android:gravity="center"
                     android:layout_gravity="bottom"
                     android:textSize="20sp"
@@ -122,7 +123,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="30dp"
-                    android:text="uniform check"
+                    android:text="Kit check"
                     android:gravity="center"
                     android:layout_gravity="bottom"
                     android:textSize="20sp"
@@ -197,7 +198,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Patrol Report"
+                    android:text="Patrol"
                     android:gravity="center"
                     android:layout_gravity="bottom"
                     android:textSize="20sp"
@@ -246,7 +247,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Book Off"
+                    android:text="Clock Out"
                     android:gravity="center"
                     android:layout_gravity="bottom"
                     android:textSize="20sp"

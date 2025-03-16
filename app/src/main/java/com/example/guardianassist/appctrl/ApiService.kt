@@ -314,7 +314,26 @@ data class ClockOutResponse(
     @SerializedName("message") val message: String?
 )
 
+data class PatrolLogRequest(
+    @SerializedName("user_id") val userId: Int,  // ✅ User performing the patrol
+    @SerializedName("site_id") val siteId: Int,  // ✅ Site where patrol happens
+    @SerializedName("org_id") val orgId: Int,    // ✅ Organization ID
+    @SerializedName("tag_name") val tagName: String  // ✅ NFC tag name scanned
+)
+data class PatrolRecordsRequest(
+    @SerializedName("user_id") val userId: Int,
+    @SerializedName("book_on_time") val bookOnTime: String
+)
 
+data class PatrolRecord(
+    @SerializedName("tag_name") val tagName: String,
+    @SerializedName("patrol_time") val patrolTime: String
+)
+
+data class PatrolResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("patrols") val patrols: List<PatrolRecord>?
+)
 interface ApiService {
     //logs
     @POST("savelog.php")
@@ -457,5 +476,22 @@ interface ApiService {
 
     @POST("clock_out.php")
     fun clockOut(@Body request: ClockOutRequest): Call<ClockOutResponse>
+
+    // Save Patrol Log
+    @POST("save_patrol_log.php")
+    fun savePatrolLog(@Body request: PatrolLogRequest): Call<BasicResponse>
+
+
+    @POST("get_filtered_patrol_records.php")
+    fun getPatrolRecords(
+        @Query("user_id") userId: Int,
+
+        @Query("book_on_time") bookOnTime: String
+    ): Call<PatrolResponse>
+    @POST("get_patrol_records.php")
+    fun getPatrolRecords(
+        @Body request: PatrolRecordsRequest
+    ): Call<PatrolResponse>
+
 }
 

@@ -74,8 +74,8 @@ class UserDashboardActivity : AppCompatActivity() {
         binding.dashboardTitle.text = "Welcome ${realName ?: "User"}"
 
         // button
-        binding.btnPatrol.setOnClickListener {
-            val intent =Intent(this, MappingActivity::class.java)
+        binding.patrol.setOnClickListener {
+            val intent =Intent(this,PatrolActivity::class.java)
             startActivity(intent)
         }
         binding.bookoff.setOnClickListener {
