@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/item_hourlycheck_background"
+    android:elevation="4dp"
+    android:layout_marginTop="2dp"
+    android:layout_marginBottom="2dp"
+    android:layout_marginEnd="3dp"
+    android:layout_marginStart="3dp"
+    android:id="@+id/hourlyCheckItem">
+
+
+    <!-- Site Name & Real Name -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <TextView
+            android:id="@+id/siteNameText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Site Name"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/realNameText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="User Name"
+            android:textSize="16sp"
+            android:textColor="@color/dark_gray"/>
+    </LinearLayout>
+
+    <!-- Safety, Security, and Equipment -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="3"
+        android:paddingTop="4dp">
+
+        <TextView
+            android:id="@+id/personalSafetyText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Safety: ✅"
+            android:textSize="14sp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/siteSecureText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Security: ✅"
+            android:textSize="14sp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/equipmentFunctionalText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Equipment: ✅"
+            android:textSize="14sp"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+
+    <!-- Expandable Comments -->
+    <TextView
+        android:id="@+id/commentsText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Comments"
+        android:textSize="14sp"
+        android:textColor="@color/gray"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:paddingTop="4dp"/>
+
+    <!-- Check Time -->
+    <TextView
+        android:id="@+id/checkTimeText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Check Time: 2025-03-20 14:30:00"
+        android:textSize="12sp"
+        android:textColor="@color/gray"
+        android:paddingTop="4dp"/>
+</LinearLayout>

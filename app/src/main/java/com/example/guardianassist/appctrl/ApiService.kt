@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -213,10 +214,13 @@ data class UserLoginResponse(
 
 data class AdminLoginResponse(
     @SerializedName("success") val success: Boolean,
-    @SerializedName("token") val token: String?,
     @SerializedName("message") val message: String?,
-    @SerializedName("org_id") val orgId: Int? = -1,  // ✅ Default to -1
-    @SerializedName("site_id") val siteId: Int? = -1  // ✅ Default to -1
+    @SerializedName("token") val token: String?,
+    @SerializedName("admin_id") val adminId: Int = -1,  // ✅ Default -1 if missing
+    @SerializedName("org_id") val orgId: Int = -1,  // ✅ Default -1 if missing
+    @SerializedName("site_id") val siteId: Int = -1,  // ✅ Default -1 if missing
+    @SerializedName("admin_level") val adminLevel: String = "Unknown",  // ✅ Default "Unknown"
+    @SerializedName("site_access") val siteAccess: List<Int> = emptyList()  // ✅ Default empty list
 )
 
 
@@ -334,6 +338,87 @@ data class PatrolRecord(
 data class PatrolResponse(
     @SerializedName("success") val success: Boolean,
     @SerializedName("patrols") val patrols: List<PatrolRecord>?
+)
+//
+data class SiteNamesResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("sites") val sites: List<SiteNames>
+)
+
+data class SiteNames(
+    @SerializedName("site_id") val siteId: Int,
+    @SerializedName("site_name") val siteName: String
+)
+
+//
+data class AdminClockInResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("clock_ins") val clockIns: List<ClockInRecord>
+)
+
+data class ClockInRecord(
+    @SerializedName("site_name") val siteName: String,
+    @SerializedName("real_name") val realName: String,
+    @SerializedName("clock_in_time") val clockInTime: String,
+    @SerializedName("is_on_site") val isOnSite: Int
+)
+//clock out
+data class AdminClockOutResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("clock_outs") val clockOuts: List<ClockOutRecord>
+)
+
+data class ClockOutRecord(
+    @SerializedName("site_name") val siteName: String,
+    @SerializedName("real_name") val realName: String,
+    @SerializedName("clock_out_time") val clockOutTime: String
+)
+//
+data class HourlyCheckResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("hourly_checks") val hourlyChecks: List<HourlyCheckRecord>
+)
+
+data class HourlyCheckRecord(
+    @SerializedName("site_name") val siteName: String,
+    @SerializedName("real_name") val realName: String,
+    @SerializedName("personal_safety") val personalSafety: Int,
+    @SerializedName("site_secure") val siteSecure: Int,
+    @SerializedName("equipment_functional") val equipmentFunctional: Int,
+    @SerializedName("comments") val comments: String?,
+    @SerializedName("check_time") val checkTime: String
+)
+data class AdminPatrol(
+    val id: Int,
+    @SerializedName("user_id") val userId: Int,
+    @SerializedName("site_id") val siteId: Int,
+    @SerializedName("org_id") val orgId: Int,
+    @SerializedName("tag_name") val tagName: String,
+    @SerializedName("patrol_time") val patrolTime: String
+)
+
+data class AdminPatrolResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("patrols") val patrols: List<AdminSitePatrol>
+)
+
+data class AdminSitePatrol(
+    @SerializedName("site_name") val siteName: String,
+    @SerializedName("patrols") val patrolRecords: List<AdminPatrolRecord>
+)
+
+data class AdminPatrolRecord(
+    @SerializedName("real_name") val realName: String,
+    @SerializedName("tag_name") val tagName: String,
+    @SerializedName("patrol_date") val patrolDate: String,
+    @SerializedName("patrol_time") val patrolTime: String
+)
+data class GroupedPatrols(
+    val siteName: String,
+    val guards: Map<String, Map<String, Int>> // Guard -> Patrol Area -> Visit Count
+)
+data class AdminSiteRequest(
+    @SerializedName("site_ids") val siteIds: List<Int>
 )
 interface ApiService {
     //logs
@@ -493,6 +578,21 @@ interface ApiService {
     fun getPatrolRecords(
         @Body request: PatrolRecordsRequest
     ): Call<PatrolResponse>
+
+    @POST("get_admin_sites_names.php")
+    fun getSiteNames(@Body request: SiteRequest): Call<SiteNamesResponse>
+    @POST("get_clock_in_records.php")
+    fun getClockInRecords(@Body request: SiteRequest): Call<AdminClockInResponse>
+    //admin clock out
+    @POST("get_clock_out_records.php")
+    fun getClockOutRecords(@Body request: SiteRequest): Call<AdminClockOutResponse>
+    //admin Hourly Check
+    @POST("get_hourly_checks.php")
+    fun getHourlyChecks(@Body request: SiteRequest): Call<HourlyCheckResponse>
+
+    //
+    @POST("get_patrols.php")
+    fun getPatrols(@Body request: AdminSiteRequest): Call<AdminPatrolResponse>
 
 }
 

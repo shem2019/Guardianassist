@@ -41,7 +41,6 @@ class AdminLoginFragment : Fragment() {
                 Log.i("AdminLogin", "Attempting admin login for user: $username")
                 performLogin(username, password)
             } else {
-                Log.e("AdminLogin", "Login fields are empty.")
                 Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
             }
         }
@@ -54,9 +53,15 @@ class AdminLoginFragment : Fragment() {
             override fun onResponse(call: Call<AdminLoginResponse>, response: Response<AdminLoginResponse>) {
                 if (response.isSuccessful) {
                     val loginResponse = response.body()
-                    if (loginResponse?.success == true && loginResponse.token != null) {
-                        sessionManager.saveAdminToken(loginResponse.token)
-                        sessionManager.saveAdminPrivileges(loginResponse.orgId, loginResponse.siteId)  // ✅ Save Access Level
+                    if (loginResponse?.success == true) {
+                        loginResponse.token?.let { sessionManager.saveAdminToken(it) }
+                        sessionManager.saveAdminPrivileges(
+                            loginResponse.orgId,
+                            loginResponse.siteId,
+                            loginResponse.adminLevel,
+                            loginResponse.siteAccess
+                        )
+
                         navigateToAdminDashboard()
                     } else {
                         Toast.makeText(requireContext(), loginResponse?.message ?: "Login failed", Toast.LENGTH_SHORT).show()
@@ -72,15 +77,9 @@ class AdminLoginFragment : Fragment() {
         })
     }
 
-
-
     private fun navigateToAdminDashboard() {
-        Log.i("AdminLogin", "Navigating to AdminDashboardActivity.")
-
         val intent = Intent(requireContext(), AdminDash::class.java)
         startActivity(intent)
-
-        Log.i("AdminLogin", "Closing admin login activity.")
         requireActivity().finish()
     }
 

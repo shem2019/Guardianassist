@@ -3,6 +3,8 @@ package com.example.guardianassist.appctrl
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 class SessionManager(context: Context) {
 
@@ -22,6 +24,8 @@ class SessionManager(context: Context) {
         private const val BOOK_ON_TIME_KEY = "book_on_time"
         private const val ADMIN_ORG_ID_KEY = "admin_org_id"
         private const val ADMIN_SITE_ID_KEY = "admin_site_id"
+        private const val ADMIN_LEVEL_KEY = "admin_level"
+        private const val ADMIN_SITE_ACCESS_KEY = "admin_site_access" // List of site IDs
     }
 
     // Save admin token to SharedPreferences
@@ -154,14 +158,32 @@ class SessionManager(context: Context) {
     fun fetchBookOnTime(): String? = prefs.getString(BOOK_ON_TIME_KEY, "N/A")
 
 
-    fun fetchAdminOrgId(): Int {
-        return prefs.getInt("admin_org_id", -1)
+
+    fun saveAdminPrivileges(orgId: Int?, siteId: Int?, adminLevel: String, siteAccess: List<Int>) {
+        prefs.edit().apply {
+            putInt(ADMIN_ORG_ID_KEY, orgId ?: -1)  // Default `-1` for unrestricted access
+            putInt(ADMIN_SITE_ID_KEY, siteId ?: -1)
+            putString(ADMIN_LEVEL_KEY, adminLevel)
+            putString(ADMIN_SITE_ACCESS_KEY, Gson().toJson(siteAccess)) // Save list as JSON
+            apply()
+        }
+        Log.d("SessionManager", "✅ Admin Privileges Saved: OrgID=$orgId, SiteID=$siteId, Level=$adminLevel, Sites=$siteAccess")
     }
 
-    fun fetchAdminSiteId(): Int {
-        return prefs.getInt("admin_site_id", -1)
-    }
+    // ✅ Fetch Admin Org ID
+    fun fetchAdminOrgId(): Int = prefs.getInt(ADMIN_ORG_ID_KEY, -1)
 
+    // ✅ Fetch Admin Site ID
+    fun fetchAdminSiteId(): Int = prefs.getInt(ADMIN_SITE_ID_KEY, -1)
+
+    // ✅ Fetch Admin Level
+    fun fetchAdminLevel(): String = prefs.getString(ADMIN_LEVEL_KEY, "Unknown") ?: "Unknown"
+
+    // ✅ Fetch Accessible Site IDs
+    fun fetchSiteAccess(): List<Int> {
+        val json = prefs.getString(ADMIN_SITE_ACCESS_KEY, "[]") ?: "[]"
+        return Gson().fromJson(json, object : TypeToken<List<Int>>() {}.type)
+    }
 
 
     // Clear session (on logout)
@@ -175,7 +197,13 @@ class SessionManager(context: Context) {
             remove(ORG_NAME_KEY)
             remove(SITE_ID_KEY)
             remove(SITE_NAME_KEY)
+            remove(ADMIN_TOKEN_KEY)
+            remove(ADMIN_ORG_ID_KEY)
+            remove(ADMIN_SITE_ID_KEY)
+            remove(ADMIN_LEVEL_KEY)
+            remove(ADMIN_SITE_ACCESS_KEY)
             apply()
         }
+        Log.d("SessionManager", "❌ Admin Session Cleared")
     }
 }
