@@ -1,42 +1,34 @@
-package com.example.guardianassist
+package com.example.guardianassist.user
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.media.MediaPlayer
-import android.nfc.NdefMessage
-import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
-import android.nfc.Tag
-import android.nfc.tech.Ndef
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
+import com.example.guardianassist.user.ClockOutActivity
+import com.example.guardianassist.HourlyCheckActivity
+import com.example.guardianassist.LandingPage
+import com.example.guardianassist.R
 import com.example.guardianassist.appctrl.RetrofitClient
-import com.example.guardianassist.appctrl.SessionManager
-import com.example.guardianassist.appctrl.SaveEventRequest
 import com.example.guardianassist.appctrl.SaveLogRequest
+import com.example.guardianassist.appctrl.SessionManager
 import com.example.guardianassist.databinding.ActivityUserDashboardBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.util.*
 
 class UserDashboardActivity : AppCompatActivity() {
 
@@ -75,11 +67,11 @@ class UserDashboardActivity : AppCompatActivity() {
 
         // button
         binding.patrol.setOnClickListener {
-            val intent =Intent(this,PatrolActivity::class.java)
+            val intent = Intent(this, PatrolActivity::class.java)
             startActivity(intent)
         }
         binding.bookoff.setOnClickListener {
-            val intent=Intent(this,ClockOutActivity::class.java)
+            val intent= Intent(this, ClockOutActivity::class.java)
             startActivity(intent)
         }
 
@@ -134,7 +126,7 @@ class UserDashboardActivity : AppCompatActivity() {
         }
 
         binding.hourlycheck.setOnClickListener {
-            val intent= Intent(this,HourlyCheckActivity::class.java)
+            val intent= Intent(this, HourlyCheckActivity::class.java)
             startActivity(intent)
             resetHourlyCheckUI()
 
@@ -146,7 +138,7 @@ class UserDashboardActivity : AppCompatActivity() {
             startActivity(intent)
         }
         binding.incident.setOnClickListener {
-            val intent= Intent(this,IncidentReportActivity::class.java)
+            val intent= Intent(this, IncidentReportActivity::class.java)
             startActivity(intent)
         }
     }
@@ -154,7 +146,8 @@ class UserDashboardActivity : AppCompatActivity() {
     private fun saveLog(eventType: String, token: String) {
         val logRequest = SaveLogRequest(event_type = eventType)
 
-        RetrofitClient.apiService.saveLog("Bearer $token", logRequest).enqueue(object : Callback<Void> {
+        RetrofitClient.apiService.saveLog("Bearer $token", logRequest).enqueue(object :
+            Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (!response.isSuccessful) {
                     Log.e("LOG", "Failed to save log. Response code: ${response.code()} - ${response.errorBody()?.string()}")
@@ -221,7 +214,7 @@ class UserDashboardActivity : AppCompatActivity() {
                 description = descriptionText
             }
             val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }

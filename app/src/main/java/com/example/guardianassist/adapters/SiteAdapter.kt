@@ -1,4 +1,4 @@
-package com.example.guardianassist
+package com.example.guardianassist.adapters
 
 import android.graphics.Color
 import android.view.LayoutInflater
@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Switch
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.guardianassist.R
 import com.example.guardianassist.appctrl.Site
 
 class SiteAdapter(

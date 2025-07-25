@@ -6,6 +6,7 @@ import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.guardianassist.appctrl.SessionManager
+import com.example.guardianassist.user.UserDashboardActivity
 
 class LandingPage : AppCompatActivity() {
 

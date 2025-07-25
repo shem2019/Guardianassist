@@ -8,6 +8,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.guardianassist.adapters.SiteAdapter
 import com.example.guardianassist.appctrl.BasicResponse
 import com.example.guardianassist.appctrl.RetrofitClient
 import com.example.guardianassist.appctrl.Site

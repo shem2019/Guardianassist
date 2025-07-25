@@ -33,10 +33,10 @@
         android:theme="@style/Theme.GuardianAssist"
         tools:targetApi="31">
         <activity
-            android:name=".ClockOutActivity"
+            android:name=".user.ClockOutActivity"
             android:exported="false" />
         <activity
-            android:name=".BookOnActivity"
+            android:name=".user.BookOnActivity"
             android:exported="false" />
         <activity
             android:name=".NfcTagsActivity"
@@ -56,17 +56,17 @@
             android:name=".AdminPatrolMappingActivity"
             android:exported="false" />
         <activity
-            android:name=".PatrolActivity"
+            android:name=".user.PatrolActivity"
             android:exported="false" />
         <activity
-            android:name=".IncidentReportActivity"
+            android:name=".user.IncidentReportActivity"
             android:exported="false" />
         <activity
             android:name=".HourlyCheckActivity"
             android:exported="false"
             android:theme="@style/Theme.GuardianAssist" />
         <activity
-            android:name=".Uniformcheck"
+            android:name=".user.Uniformcheck"
             android:exported="false" />
         <activity
             android:name=".NfcActivity"
@@ -81,7 +81,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".UserDashboardActivity"
+            android:name=".user.UserDashboardActivity"
             android:exported="false" />
         <activity
             android:name=".UserManagementActivity"

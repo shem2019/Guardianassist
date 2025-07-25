@@ -1,12 +1,14 @@
-package com.example.guardianassist
+package com.example.guardianassist.adapters
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Button
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.guardianassist.R
 import com.example.guardianassist.appctrl.NfcTag
+
 class NfcTagAdapter(
     private val tags: List<NfcTag>,
     private val onWriteTag: (NfcTag) -> Unit

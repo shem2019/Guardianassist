@@ -1,25 +1,34 @@
-package com.example.guardianassist
+package com.example.guardianassist.user
 
 import android.Manifest
+import android.R
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.*
+import androidx.camera.core.Camera
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.exifinterface.media.ExifInterface
 import com.example.guardianassist.appctrl.IncidentReportResponse
 import com.example.guardianassist.appctrl.RetrofitClient
 import com.example.guardianassist.appctrl.SessionManager
 import com.example.guardianassist.databinding.ActivityIncidentReportBinding
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -74,7 +83,7 @@ class IncidentReportActivity : AppCompatActivity() {
             "Other"
         )
 
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, incidentTypes)
+        val adapter = ArrayAdapter(this, R.layout.simple_spinner_dropdown_item, incidentTypes)
         binding.spinnerIncidentType.adapter = adapter
 
         binding.spinnerIncidentType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -114,7 +123,7 @@ class IncidentReportActivity : AppCompatActivity() {
     }
 
     private fun startCameraPreview(previewView: PreviewView, callback: (Bitmap) -> Unit) {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        val cameraProviderFuture = ProcessCameraProvider.Companion.getInstance(this)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
 
@@ -162,21 +171,21 @@ class IncidentReportActivity : AppCompatActivity() {
     }
 
     private fun fixImageRotation(imagePath: String): Bitmap {
-        val bitmap = android.graphics.BitmapFactory.decodeFile(imagePath)
-        val exif = androidx.exifinterface.media.ExifInterface(imagePath)
+        val bitmap = BitmapFactory.decodeFile(imagePath)
+        val exif = ExifInterface(imagePath)
 
         val rotation = when (exif.getAttributeInt(
-            androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION,
-            androidx.exifinterface.media.ExifInterface.ORIENTATION_UNDEFINED
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_UNDEFINED
         )) {
-            androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90 -> 90
-            androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180 -> 180
-            androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_270 -> 270
+            ExifInterface.ORIENTATION_ROTATE_90 -> 90
+            ExifInterface.ORIENTATION_ROTATE_180 -> 180
+            ExifInterface.ORIENTATION_ROTATE_270 -> 270
             else -> 0
         }
 
         return if (rotation != 0) {
-            val matrix = android.graphics.Matrix().apply { postRotate(rotation.toFloat()) }
+            val matrix = Matrix().apply { postRotate(rotation.toFloat()) }
             Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
         } else {
             bitmap

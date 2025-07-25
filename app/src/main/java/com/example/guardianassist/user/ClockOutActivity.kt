@@ -1,4 +1,4 @@
-package com.example.guardianassist
+package com.example.guardianassist.user
 
 import android.app.AlertDialog
 import android.app.PendingIntent
@@ -15,15 +15,20 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.guardianassist.appctrl.*
+import com.example.guardianassist.R
+import com.example.guardianassist.appctrl.ClockOutRequest
+import com.example.guardianassist.appctrl.ClockOutResponse
+import com.example.guardianassist.appctrl.RetrofitClient
+import com.example.guardianassist.appctrl.SessionManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.nio.charset.Charset
-import java.text.SimpleDateFormat
-import java.util.*
 
 class ClockOutActivity : AppCompatActivity() {
 

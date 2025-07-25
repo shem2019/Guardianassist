@@ -4,8 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.guardianassist.adapters.ViewPagerAdapter
 import com.example.guardianassist.appctrl.SessionManager
 import com.example.guardianassist.appctrl.SiteNames
 import com.example.guardianassist.appctrl.SiteNamesResponse
@@ -30,95 +33,95 @@ class AdminDash : AppCompatActivity() {
 
         sessionManager = SessionManager(this)
 
+        // 1) Make our MaterialToolbar act as the ActionBar
         setSupportActionBar(binding.toolbar)
 
-        // 2. Inflate the menu
-        binding.toolbar.inflateMenu(R.menu.admin_dash_menu)
-
-        // 3. Handle menu-item clicks here
-        binding.toolbar.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.action_logout -> {
-                    // clear session
-                    sessionManager.clearSession()
-                    // go back to landing page and clear backstack
-                    startActivity(
-                        Intent(this, LandingPage::class.java)
-                            .apply { flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK }
-                    )
-                    true
-                }
-                else -> false
-            }
-        }
-
-
-        // 2) Buttons
+        // 2) Wire up the two top buttons
         binding.btnRegisterSite.setOnClickListener {
             startActivity(Intent(this, MappingActivity::class.java))
         }
         binding.btnManageUsers.setOnClickListener {
             startActivity(Intent(this, UserManagementActivity::class.java))
         }
+
+        // 3) FAB → NFC screen
         binding.fabTags.setOnClickListener {
             startActivity(Intent(this, NfcActivity::class.java))
         }
 
-        // 3) ViewPager2 + Tabs
+        // 4) Setup ViewPager2 + Tabs
         binding.viewPager.adapter = ViewPagerAdapter(this)
         val tabTitles = arrayOf("Clock In", "Clock Out", "Hourly Check", "Patrols", "Uniform Check")
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, pos ->
             tab.text = tabTitles[pos]
         }.attach()
 
-        // 4) Load Admin info shortly after onCreate
+        // 5) Fetch & display admin info after a slight delay
         Handler(Looper.getMainLooper()).postDelayed({
             displayAdminDetails()
         }, 500)
     }
 
-    private fun displayAdminDetails() {
-        // Show the admin level
-        val adminLevel = sessionManager.fetchAdminLevel()
-        binding.tvAdminLevel.text = "Admin Level: $adminLevel"
+    /** Inflate our logout menu into the ActionBar */
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.admin_dash_menu, menu)
+        return true
+    }
 
-        // Clear any old chips
-        binding.chipGroupSites.removeAllViews()
-
-        // Fetch and show accessible sites
-        val siteIds = sessionManager.fetchSiteAccess()
-        if (siteIds.isNotEmpty()) {
-            fetchSiteNames(siteIds)
-        } else {
-            // No sites → show a disabled “None” chip
-            val noneChip = Chip(this).apply {
-                text = "None"
-                isCheckable = false
-                isEnabled = false
+    /** Handle toolbar item clicks */
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_logout -> {
+                sessionManager.clearSession()
+                startActivity(
+                    Intent(this, LandingPage::class.java)
+                        .apply { flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK }
+                )
+                true
             }
-            binding.chipGroupSites.addView(noneChip)
-            Toast.makeText(this, "No accessible sites found.", Toast.LENGTH_SHORT).show()
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
+    /** Read admin level + site IDs, then render text + chips */
+    private fun displayAdminDetails() {
+        binding.tvAdminLevel.text = "Admin Level: ${sessionManager.fetchAdminLevel()}"
+        binding.chipGroupSites.removeAllViews()
+
+        val siteIds = sessionManager.fetchSiteAccess()
+        if (siteIds.isEmpty()) {
+            // show a disabled "None" chip
+            binding.chipGroupSites.addView(
+                Chip(this).apply {
+                    text = "None"
+                    isCheckable = false
+                    isEnabled = false
+                }
+            )
+            Toast.makeText(this, "No accessible sites found.", Toast.LENGTH_SHORT).show()
+        } else {
+            fetchSiteNames(siteIds)
+        }
+    }
+
+    /** Call backend to resolve site names, then add one Chip per site */
     private fun fetchSiteNames(siteIds: List<Int>) {
-        val request = SiteRequest(siteIds)
         RetrofitClient.apiService
-            .getSiteNames(request)
+            .getSiteNames(SiteRequest(siteIds))
             .enqueue(object : Callback<SiteNamesResponse> {
                 override fun onResponse(
                     call: Call<SiteNamesResponse>,
                     response: Response<SiteNamesResponse>
                 ) {
                     if (response.isSuccessful && response.body()?.success == true) {
-                        val sites: List<SiteNames> = response.body()?.sites ?: emptyList()
                         binding.chipGroupSites.removeAllViews()
-                        sites.forEach { site ->
-                            val chip = Chip(this@AdminDash).apply {
-                                text = site.siteName
-                                isCheckable = false
-                            }
-                            binding.chipGroupSites.addView(chip)
+                        response.body()!!.sites.forEach { site ->
+                            binding.chipGroupSites.addView(
+                                Chip(this@AdminDash).apply {
+                                    text = site.siteName
+                                    isCheckable = false
+                                }
+                            )
                         }
                     } else {
                         Toast.makeText(
@@ -128,7 +131,6 @@ class AdminDash : AppCompatActivity() {
                         ).show()
                     }
                 }
-
                 override fun onFailure(call: Call<SiteNamesResponse>, t: Throwable) {
                     Toast.makeText(
                         this@AdminDash,

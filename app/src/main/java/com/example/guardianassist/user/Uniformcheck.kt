@@ -1,4 +1,4 @@
-package com.example.guardianassist
+package com.example.guardianassist.user
 
 import android.Manifest
 import android.app.PendingIntent
@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
@@ -21,11 +23,16 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.*
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.exifinterface.media.ExifInterface
+import com.example.guardianassist.R
 import com.example.guardianassist.appctrl.RetrofitClient
 import com.example.guardianassist.appctrl.SessionManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -225,7 +232,7 @@ class Uniformcheck : AppCompatActivity() {
         startCamera()
     }
     private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        val cameraProviderFuture = ProcessCameraProvider.Companion.getInstance(this)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
             val preview = Preview.Builder().build().also {
@@ -272,21 +279,21 @@ class Uniformcheck : AppCompatActivity() {
         })
     }
     private fun fixImageRotation(imagePath: String): Bitmap {
-        val bitmap = android.graphics.BitmapFactory.decodeFile(imagePath)
-        val exif = androidx.exifinterface.media.ExifInterface(imagePath)
+        val bitmap = BitmapFactory.decodeFile(imagePath)
+        val exif = ExifInterface(imagePath)
 
         val rotation = when (exif.getAttributeInt(
-            androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION,
-            androidx.exifinterface.media.ExifInterface.ORIENTATION_UNDEFINED
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_UNDEFINED
         )) {
-            androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90 -> 90
-            androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180 -> 180
-            androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_270 -> 270
+            ExifInterface.ORIENTATION_ROTATE_90 -> 90
+            ExifInterface.ORIENTATION_ROTATE_180 -> 180
+            ExifInterface.ORIENTATION_ROTATE_270 -> 270
             else -> 0
         }
 
         return if (rotation != 0) {
-            val matrix = android.graphics.Matrix().apply { postRotate(rotation.toFloat()) }
+            val matrix = Matrix().apply { postRotate(rotation.toFloat()) }
             Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
         } else {
             bitmap
@@ -328,9 +335,9 @@ class Uniformcheck : AppCompatActivity() {
         capturedBitmap?.compress(Bitmap.CompressFormat.JPEG, 90, stream)
         val byteArray = stream.toByteArray()
 
-        val requestBody = RequestBody.create("image/jpeg".toMediaTypeOrNull(), byteArray)
+        val requestBody = RequestBody.Companion.create("image/jpeg".toMediaTypeOrNull(), byteArray)
         val imagePart = MultipartBody.Part.createFormData("image", "uniform_check.jpg", requestBody)
-        val descriptionPart = RequestBody.create("text/plain".toMediaTypeOrNull(), "Uniform Check")
+        val descriptionPart = RequestBody.Companion.create("text/plain".toMediaTypeOrNull(), "Uniform Check")
 
         RetrofitClient.apiService.uploadImage("Bearer $token", imagePart, descriptionPart)
             .enqueue(object : Callback<Void> {

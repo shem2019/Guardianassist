@@ -1,4 +1,4 @@
-package com.example.guardianassist
+package com.example.guardianassist.adapters
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity

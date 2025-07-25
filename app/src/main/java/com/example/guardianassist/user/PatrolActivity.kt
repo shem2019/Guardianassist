@@ -1,25 +1,38 @@
-package com.example.guardianassist
+package com.example.guardianassist.user
 
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
-import android.nfc.NfcAdapter
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
+import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.Ndef
 import android.os.Bundle
 import android.util.Log
-import android.widget.*
+import android.widget.Button
+import android.widget.ProgressBar
+import android.widget.TableLayout
+import android.widget.TableRow
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.guardianassist.appctrl.*
+import com.example.guardianassist.adapters.PatrolAdapter
+import com.example.guardianassist.adapters.PatrolRecord
+import com.example.guardianassist.R
+import com.example.guardianassist.appctrl.BasicResponse
+import com.example.guardianassist.appctrl.PatrolLogRequest
+import com.example.guardianassist.appctrl.PatrolResponse
+import com.example.guardianassist.appctrl.RetrofitClient
+import com.example.guardianassist.appctrl.SessionManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.nio.charset.Charset
+import kotlin.collections.iterator
 
 class PatrolActivity : AppCompatActivity() {
 

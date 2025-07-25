@@ -1,13 +1,14 @@
-package com.example.guardianassist
+package com.example.guardianassist.adapters
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.example.guardianassist.R
 import com.example.guardianassist.appctrl.Organization
+
 class OrganizationAdapter(
     private val organizations: List<Organization>,
     private val onItemClick: (Organization) -> Unit

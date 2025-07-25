@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    >
+    android:padding="0dp">
 
-    <!-- Top App Bar with logout menu -->
+    <!-- Top App Bar with logout menu inflated in code -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         style="@style/Widget.MaterialComponents.Toolbar.Primary"
@@ -15,7 +15,7 @@
         android:layout_height="?attr/actionBarSize"
         app:title="Admin Dashboard"
         app:titleCentered="true"
-        app:menu="@menu/admin_dash_menu"
+        app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -71,7 +71,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_shield"
-                 />
+                />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvAdminLevel"

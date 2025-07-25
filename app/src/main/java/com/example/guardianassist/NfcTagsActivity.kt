@@ -13,6 +13,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.guardianassist.adapters.NfcTagAdapter
 import com.example.guardianassist.appctrl.BasicResponse
 import com.example.guardianassist.appctrl.NfcTag
 import com.example.guardianassist.appctrl.NfcTagResponse
