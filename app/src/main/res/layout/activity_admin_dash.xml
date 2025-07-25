@@ -1,122 +1,157 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AdminDash"
-    android:background="@color/white">
+    android:background="@color/white"
+    >
 
-    <!-- Header with title and logout button -->
-    <LinearLayout
-        android:id="@+id/header"
+    <!-- Top App Bar with logout menu -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        style="@style/Widget.MaterialComponents.Toolbar.Primary"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@color/colorPrimary"
+        android:layout_height="?attr/actionBarSize"
+        app:title="Admin Dashboard"
+        app:titleCentered="true"
+        app:menu="@menu/admin_dash_menu"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:padding="16dp">
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-        <TextView
-            android:id="@+id/adminDashboardTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Admin Dashboard"
-            android:gravity="center"
-            android:layout_gravity="center"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <ImageView
-            android:id="@+id/logoutIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/shutdown"
-            android:contentDescription="Logout"
-            android:padding="8dp"
-             />
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/regsite"
-        android:layout_width="match_parent"
+    <!-- Register Site + User Management buttons -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnRegisterSite"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Register Site"
+        android:layout_marginTop="5dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/header" />
+        app:layout_constraintEnd_toStartOf="@+id/btnManageUsers"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintWidth_default="spread"/>
 
-    <TextView
-        android:id="@+id/adminLevelText"
-        android:layout_width="wrap_content"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnManageUsers"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Admin Level: Loading..."
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:padding="8dp"
-        app:layout_constraintTop_toBottomOf="@id/regsite"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:text="User Management"
+        android:layout_marginTop="5dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toEndOf="@id/btnRegisterSite"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_default="spread"/>
 
-    <TextView
-        android:id="@+id/siteAccessText"
-        android:layout_width="wrap_content"
+    <!-- Admin Level Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardAdminInfo"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Accessible Sites: Loading..."
-        android:textSize="14sp"
-        android:padding="8dp"
-        app:layout_constraintTop_toBottomOf="@id/adminLevelText"
+        android:layout_marginTop="16dp"
+        app:cardElevation="4dp"
+        app:cardCornerRadius="8dp"
+        app:strokeWidth="4dp"
+        app:strokeColor="?attr/colorSecondary"
+        app:layout_constraintTop_toBottomOf="@id/btnRegisterSite"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="5dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_shield"
+                 />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvAdminLevel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:text="Admin Level: Loading..."
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:textStyle="bold"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Accessible Sites Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardSites"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardElevation="2dp"
+        app:cardCornerRadius="8dp"
+        app:layout_constraintTop_toBottomOf="@id/cardAdminInfo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="5dp">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvSitesLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Accessible Sites:"
+                android:textAppearance="?attr/textAppearanceBody2"
+                android:textStyle="bold"/>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupSites"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:singleLine="false"
+                app:chipSpacing="8dp"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Tabs + ViewPager -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/siteAccessText"
+        android:layout_marginTop="5dp"
+        app:tabMode="fixed"
         app:tabGravity="fill"
-        app:tabMode="fixed" />
+        app:layout_constraintTop_toBottomOf="@id/cardSites"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/tabLayout"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tabLayout" />
-    <Button
-        android:id="@+id/registerUserButton"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Floating Action Button for Tags -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabTags"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="User Management"
-        android:textColor="@android:color/white"
-        android:backgroundTint="#5DEA85"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/viewPager"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-    <!-- Floating Action Button for additional actions -->
-
-    <Button
-        android:id="@+id/tags"
-        android:layout_width="100dp"
-        android:layout_height="40dp"
-        android:text="Tags"
+        android:contentDescription="Tags"
+        app:srcCompat="@drawable/ic_tag_nfc"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.054"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/viewPager" />
-
-
+        android:layout_margin="16dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -39,9 +39,9 @@ class LandingPage : AppCompatActivity() {
         }
 
         // Declare Admin and User buttons if no token is found
-        val adminButton = findViewById<Button>(R.id.btnadmin)
+        val adminButton = findViewById<Button>(R.id.btnAdmin)
         //val adminsignupButton = findViewById<Button>(R.id.btnsignup)
-        val userButton = findViewById<Button>(R.id.btnuser)
+        val userButton = findViewById<Button>(R.id.btnUser)
 
         // Load Admin Login fragment when Admin button is clicked
         adminButton.setOnClickListener {

@@ -13,7 +13,10 @@
         <item name="android:textColor">@color/white</item>
         <item name="android:padding">16dp</item>
     </style>
-
+    <style name="ShapeAppearance.MaterialComponents.Circle">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
     <style name="Theme.GuardianAssist" parent="Base.Theme.GuardianAssist" />
 
     <!-- Custom Button Style -->
