@@ -1,86 +1,165 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="16dp"
-    android:background="@color/white"
-    android:gravity="center">
+    android:background="@color/white">
 
-    <!-- Organization Name -->
-    <TextView
-        android:id="@+id/tvOrganizationName"
-        android:layout_width="wrap_content"
+    <!-- ───── ORG & SITE DETAILS ───── -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardSiteDetails"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Organization: Unknown"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:padding="8dp"
-        android:textColor="@android:color/black" />
+        app:cardElevation="4dp"
+        app:cardCornerRadius="12dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- Site Name -->
-    <TextView
-        android:id="@+id/tvSiteName"
-        android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/tvOrganizationName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Organization: —"
+                android:textSize="20sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tvSiteName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Site: —"
+                android:textSize="18sp"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ───── SESSION DETAILS & TIMER ───── -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardSession"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Site: Unknown"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:padding="8dp"
-        android:textColor="@android:color/black" />
-
-    <!-- User Name -->
-    <TextView
-        android:id="@+id/tvRealName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Name: User"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:padding="8dp"
-        android:textColor="@android:color/black" />
-
-    <!-- Clock-In Time -->
-    <TextView
-        android:id="@+id/tvClockInTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Clock In Time: Not Available"
-        android:textSize="16sp"
-        android:padding="8dp"
-        android:textColor="@android:color/darker_gray" />
-
-    <!-- Clock Out Status -->
-    <TextView
-        android:id="@+id/tvClockOutStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Not Clocked Out"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:padding="8dp"
-        android:textColor="@android:color/holo_red_dark"
-        android:gravity="center" />
-
-    <!-- Clock Out Status Icon -->
-    <ImageView
-        android:id="@+id/ivClockOutStatus"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="8dp"
-        android:src="@drawable/cancel"
-        android:visibility="visible"
-        android:layout_gravity="center" />
-
-    <!-- Scan NFC Button -->
-    <Button
-        android:id="@+id/btnScanNfc"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Scan Clock-Out NFC"
-        android:backgroundTint="@color/blue"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
         android:layout_marginTop="16dp"
-        android:padding="12dp" />
+        app:cardElevation="4dp"
+        app:cardCornerRadius="12dp"
+        app:layout_constraintTop_toBottomOf="@id/cardSiteDetails"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/tvClockInTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Clock In: —"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/tvLiveTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Time In: 00:00:00"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/tvClockOutTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Clock Out: —"
+                android:textSize="16sp"
+                android:visibility="gone"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ───── STATUS (icon + text) ───── -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardStatus"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardElevation="4dp"
+        app:cardCornerRadius="12dp"
+        app:layout_constraintTop_toBottomOf="@id/cardSession"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="20dp">
+
+            <ImageView
+                android:id="@+id/ivClockOutStatus"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/pending"/>
+
+            <TextView
+                android:id="@+id/tvClockOutStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:text="Checking…"
+                android:textSize="20sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ───── RESPONSE LINE (success / error) ───── -->
+    <TextView
+        android:id="@+id/tvResponse"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:padding="8dp"
+        android:text="—"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/cardStatus"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ───── SCAN NFC BUTTON ───── -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnScanNfc"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Scan NFC to Clock Out"
+        app:icon="@drawable/ic_tag_nfc"
+        app:iconPadding="8dp"
+        app:layout_constraintTop_toBottomOf="@id/tvResponse"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ───── PROGRESS INDICATOR ───── -->
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progressScanning"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:visibility="gone"
+        app:indicatorSize="56dp"
+        app:layout_constraintTop_toBottomOf="@id/btnScanNfc"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

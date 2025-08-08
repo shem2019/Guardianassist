@@ -26,6 +26,10 @@ class SessionManager(context: Context) {
         private const val ADMIN_SITE_ID_KEY = "admin_site_id"
         private const val ADMIN_LEVEL_KEY = "admin_level"
         private const val ADMIN_SITE_ACCESS_KEY = "admin_site_access" // List of site IDs
+        private const val KEY_LAST_HOURLY_CHECK_TIME = "last_hourly_check_time"
+        private const val KEY_NEXT_HOURLY_DUE      = "next_hourly_due"
+
+
     }
 
     // Save admin token to SharedPreferences
@@ -56,7 +60,26 @@ class SessionManager(context: Context) {
     fun fetchRealName(): String? {
         return prefs.getString(REAL_NAME_KEY, null)
     }
+    fun saveLastHourlyCheckTime(time: String) {
+        prefs.edit()
+            .putString(KEY_LAST_HOURLY_CHECK_TIME, time)
+            .apply()
+    }
+    fun fetchLastHourlyCheckTime(): String? {
+        return prefs.getString(KEY_LAST_HOURLY_CHECK_TIME, null)
+    }
+    fun saveNextHourlyDueTime(millis: Long) {
+        prefs.edit()
+            .putLong(KEY_NEXT_HOURLY_DUE, millis)
+            .apply()
+    }
 
+    fun fetchNextHourlyDueTime(): Long? {
+        return if (prefs.contains(KEY_NEXT_HOURLY_DUE))
+            prefs.getLong(KEY_NEXT_HOURLY_DUE, 0L)
+                .takeIf { it > 0L }
+        else null
+    }
     fun saveTagName(tagName: String) {
         val editor = prefs.edit()
         editor.putString("TAG_NAME_KEY", tagName)

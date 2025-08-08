@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
 
     <uses-feature
         android:name="android.hardware.nfc"
@@ -32,6 +34,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GuardianAssist"
         tools:targetApi="31">
+        <service
+            android:name=".HourlyCheckService"
+            android:exported="false"/>
         <activity
             android:name=".user.ClockOutActivity"
             android:exported="false" />
@@ -62,7 +67,7 @@
             android:name=".user.IncidentReportActivity"
             android:exported="false" />
         <activity
-            android:name=".HourlyCheckActivity"
+            android:name=".user.HourlyCheckActivity"
             android:exported="false"
             android:theme="@style/Theme.GuardianAssist" />
         <activity

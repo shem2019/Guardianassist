@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -63,6 +64,15 @@ class IncidentReportActivity : AppCompatActivity() {
 
         if (!isCameraPermissionGranted()) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
+        }
+        if (sessionManager.fetchSiteId() <= 0) {
+            AlertDialog.Builder(this)
+                .setTitle("Booking Required")
+                .setMessage("Please Clock In first.")
+                .setPositiveButton("OK") { _, _ -> finish() }
+                .setCancelable(false)
+                .show()
+            return
         }
 
         setupIncidentDropdown()

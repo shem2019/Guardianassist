@@ -420,6 +420,40 @@ data class GroupedPatrols(
 data class AdminSiteRequest(
     @SerializedName("site_ids") val siteIds: List<Int>
 )
+
+/// book sessions
+
+// Request payloads
+data class BookSessionRequest(
+    val user_id: Int,
+    val org_id: Int,
+    val site_id: Int,
+    val tag: String
+)
+
+// Generic success/failure wrapper
+data class ApiResponse(
+    val success: Boolean,
+    val message: String
+)
+
+// For status checks (optional full history)
+data class SessionRecord(
+    val id: Int,
+    val user_id: Int,
+    val site_id: Int,
+    val clock_in_tag: String,
+    val clock_in_time: String,
+    val clock_out_tag: String?,
+    val clock_out_time: String?,
+    val site_name: String?,
+)
+data class SessionHistoryResponse(
+    val success: Boolean,
+    val sessions: List<SessionRecord>
+)
+
+
 interface ApiService {
     //logs
     @POST("savelog.php")
@@ -593,6 +627,28 @@ interface ApiService {
     //
     @POST("get_patrols.php")
     fun getPatrols(@Body request: AdminSiteRequest): Call<AdminPatrolResponse>
+
+    // book sessions
+    @POST("clock_in.php")
+    fun clockIn(
+        @Header("Authorization") token: String,
+        @Body req: BookSessionRequest
+    ): Call<ApiResponse>
+
+    @POST("clock_out_update.php")
+    fun clockOut(
+        @Header("Authorization") token: String,
+        @Body req: BookSessionRequest
+    ): Call<ApiResponse>
+
+    @GET("session_history.php")
+    fun getSessionHistory(
+        @Header("Authorization") token: String,
+        @Query("user_id") userId: Int,
+        @Query("site_id") siteId: Int,
+        @Query("date") date: String
+    ): Call<SessionHistoryResponse>
+
 
 }
 

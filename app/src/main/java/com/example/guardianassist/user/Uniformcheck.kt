@@ -146,6 +146,7 @@ class Uniformcheck : AppCompatActivity() {
         loadingDialog = AlertDialog.Builder(this)
             .setTitle("Waiting to Scan NFC Tag")
             .setMessage("Place your device near an NFC tag with 'Book On'...")
+            .setNegativeButton("Quit") { _, _ -> finish() }
             .setCancelable(false)
             .create()
         loadingDialog.show()

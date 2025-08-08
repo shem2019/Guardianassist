@@ -65,8 +65,7 @@
                 android:id="@+id/ivBookingStatus"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
-                android:src="@drawable/pending"
-                />
+                android:src="@drawable/pending"/>
 
             <LinearLayout
                 android:orientation="vertical"
@@ -83,13 +82,23 @@
                     android:textSize="20sp"
                     android:textStyle="bold"/>
 
+                <!-- Static clock-in time -->
                 <TextView
                     android:id="@+id/tvBookingTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="—"
+                    android:text="Since: —"
                     android:textSize="16sp"
                     android:layout_marginTop="6dp"/>
+
+                <!-- Live timer -->
+                <TextView
+                    android:id="@+id/tvLiveTimer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Time in: 00:00:00"
+                    android:textSize="16sp"
+                    android:layout_marginTop="2dp"/>
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
